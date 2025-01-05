@@ -3,8 +3,10 @@ import { ChatRoom } from "@/components/ChatRoom";
 import { UsernameDialog } from "@/components/UsernameDialog";
 import { FeedPost } from "@/components/FeedPost";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Users, MessageSquare } from "lucide-react";
+import { Users, MessageSquare, LogOut } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
 
 const SAMPLE_POSTS = [
   {
@@ -53,12 +55,24 @@ const Index = () => {
     return localStorage.getItem('isAdmin') === 'true';
   });
   const [gradientIndex, setGradientIndex] = useState(0);
+  const { toast } = useToast();
 
   const handleUsernameSubmit = (name: string, admin?: boolean) => {
     setUsername(name);
     setIsAdmin(!!admin);
     localStorage.setItem('username', name);
     localStorage.setItem('isAdmin', String(!!admin));
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('username');
+    localStorage.removeItem('isAdmin');
+    setUsername(null);
+    setIsAdmin(false);
+    toast({
+      title: "Logged out successfully",
+      description: "See you next time!",
+    });
   };
 
   const handleBackgroundClick = () => {
@@ -89,7 +103,18 @@ const Index = () => {
             </h1>
             <p className="text-muted-foreground">Connect with domain enthusiasts</p>
           </div>
-          <DarkModeToggle />
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleLogout}
+              className="flex items-center gap-2"
+            >
+              <LogOut className="h-4 w-4" />
+              Logout
+            </Button>
+            <DarkModeToggle />
+          </div>
         </div>
       </header>
       
