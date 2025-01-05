@@ -14,18 +14,23 @@ export const VideoElement = ({ stream, peerId, isMuted, onVideoElement }: VideoE
     if (videoRef.current) {
       videoRef.current.srcObject = stream;
       videoRef.current.autoplay = true;
+      videoRef.current.playsInline = true; // Important for mobile devices
       videoRef.current.muted = isMuted;
       
       const video = videoRef.current;
       onVideoElement(peerId, video);
 
-      const playVideo = () => {
-        video.play().catch(console.error);
+      const playVideo = async () => {
+        try {
+          await video.play();
+        } catch (error) {
+          console.error('Error playing video:', error);
+        }
       };
 
-      video.addEventListener('canplay', playVideo);
+      video.addEventListener('loadedmetadata', playVideo);
       return () => {
-        video.removeEventListener('canplay', playVideo);
+        video.removeEventListener('loadedmetadata', playVideo);
       };
     }
   }, [stream, peerId, isMuted, onVideoElement]);
@@ -33,7 +38,8 @@ export const VideoElement = ({ stream, peerId, isMuted, onVideoElement }: VideoE
   return (
     <video 
       ref={videoRef}
-      className="w-full h-full object-cover rounded-lg"
+      className="w-full h-full object-cover"
+      style={{ transform: 'scaleX(-1)' }} // Mirror the video for selfie view
     />
   );
 };
