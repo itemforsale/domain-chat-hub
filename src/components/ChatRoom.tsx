@@ -27,6 +27,7 @@ export const ChatRoom = ({ username }: ChatRoomProps) => {
       isOwn: false,
     },
   ]);
+  const [connectedCount, setConnectedCount] = useState(1);
 
   const handleSendMessage = (content: string) => {
     const newMessage: Message = {
@@ -39,6 +40,10 @@ export const ChatRoom = ({ username }: ChatRoomProps) => {
     setMessages([...messages, newMessage]);
   };
 
+  const handleConnectedUsersChange = (count: number) => {
+    setConnectedCount(count);
+  };
+
   return (
     <div className="flex flex-col h-full bg-background">
       <div className="p-4 border-b flex items-center justify-between">
@@ -48,10 +53,13 @@ export const ChatRoom = ({ username }: ChatRoomProps) => {
             Domain Chat
           </h2>
           <p className="text-sm text-muted-foreground">
-            Connected users: 1
+            Connected users: {connectedCount}
           </p>
         </div>
-        <VoiceChat username={username} />
+        <VoiceChat 
+          username={username} 
+          onConnectedUsersChange={handleConnectedUsersChange}
+        />
       </div>
       
       <ScrollArea className="flex-1 p-4">

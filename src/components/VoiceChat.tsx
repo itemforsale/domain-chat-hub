@@ -10,9 +10,10 @@ import { VideoElement } from './VideoElement';
 
 interface VoiceChatProps {
   username: string;
+  onConnectedUsersChange?: (count: number) => void;
 }
 
-export const VoiceChat = ({ username }: VoiceChatProps) => {
+export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
@@ -25,6 +26,11 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   const audioElements = useRef<Map<string, HTMLAudioElement>>(new Map());
   const videoElements = useRef<Map<string, HTMLVideoElement>>(new Map());
 
+  const updateConnectedUsers = (users: string[]) => {
+    setConnectedUsers(users);
+    onConnectedUsersChange?.(users.length);
+  };
+
   const handleToggleConnection = async () => {
     try {
       if (!isConnected) {
@@ -35,7 +41,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         
         peer.current.on('open', (id) => {
           console.log('My peer ID is: ' + id);
-          setConnectedUsers(prev => [...prev, username]);
+          updateConnectedUsers([...connectedUsers, username]);
           
           peer.current?.on('call', async (call) => {
             call.answer(mediaStream);
@@ -65,7 +71,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
           peer.current = null;
         }
         
-        setConnectedUsers(prev => prev.filter(user => user !== username));
+        updateConnectedUsers(connectedUsers.filter(user => user !== username));
         setIsConnected(false);
         
         toast({
