@@ -1,89 +1,45 @@
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Users } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import React from 'react';
 import {
   LiveKitRoom,
   VideoConference,
   ControlBar,
   useTracks,
-  RoomAudioRenderer,
 } from '@livekit/components-react';
 import '@livekit/components-styles';
+import { Track } from 'livekit-client';
+import { useToast } from '@/components/ui/use-toast';
 
 interface VoiceChatProps {
   username: string;
 }
 
 export const VoiceChat = ({ username }: VoiceChatProps) => {
-  const [isConnected, setIsConnected] = useState(false);
   const { toast } = useToast();
-
-  const handleConnect = async () => {
-    try {
-      if (!isConnected) {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        setIsConnected(true);
-        toast({
-          title: "Voice chat connected",
-          description: "You can now speak in the voice chat",
-        });
-      } else {
-        setIsConnected(false);
-        toast({
-          title: "Voice chat disconnected",
-          description: "Voice chat connection ended",
-        });
-      }
-    } catch (error) {
-      toast({
-        title: "Microphone access denied",
-        description: "Please allow microphone access to use voice chat",
-        variant: "destructive",
-      });
-    }
-  };
+  // Using LiveKit's demo server for testing. In production, use your own LiveKit server
+  const url = "wss://demo.livekit.cloud";
+  const token = "devkey"; // For demo only. In production, generate this token server-side
 
   return (
-    <div className="flex items-center gap-2">
-      <Button
-        size="icon"
-        variant={isConnected ? "default" : "secondary"}
-        onClick={handleConnect}
-        className="animate-in fade-in duration-200"
+    <div className="w-64">
+      <LiveKitRoom
+        serverUrl={url}
+        token={token}
+        connect={true}
+        name="domain-chat-room"
+        onError={(error) => {
+          console.error(error);
+          toast({
+            title: "Connection Error",
+            description: "Failed to connect to video chat",
+            variant: "destructive",
+          });
+        }}
       >
-        {isConnected ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-      </Button>
-
-      {isConnected && (
-        <>
-          <LiveKitRoom
-            serverUrl="wss://demo.livekit.cloud"
-            token="devkey"
-            roomName="main-room"
-            connect={true}
-            onError={(error) => {
-              console.error(error);
-              toast({
-                title: "Voice chat error",
-                description: error.message,
-                variant: "destructive",
-              });
-            }}
-          >
-            <RoomAudioRenderer />
-            <div className="hidden">
-              <VideoConference />
-              <ControlBar />
-            </div>
-          </LiveKitRoom>
-          
-          <span className="text-xs font-medium text-muted-foreground animate-pulse flex items-center gap-1">
-            <Users className="h-3 w-3" />
-            Live • {username}
-          </span>
-        </>
-      )}
+        <div className="relative w-64 h-48 bg-black/10 dark:bg-black/30 rounded-lg overflow-hidden shadow-lg">
+          <VideoConference />
+        </div>
+        <ControlBar />
+      </LiveKitRoom>
     </div>
   );
 };
