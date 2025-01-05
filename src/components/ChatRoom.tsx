@@ -11,7 +11,11 @@ interface Message {
   isOwn: boolean;
 }
 
-export const ChatRoom = () => {
+interface ChatRoomProps {
+  username: string;
+}
+
+export const ChatRoom = ({ username }: ChatRoomProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -26,7 +30,7 @@ export const ChatRoom = () => {
     const newMessage: Message = {
       id: messages.length + 1,
       content,
-      sender: "You",
+      sender: username,
       timestamp: "Just now",
       isOwn: true,
     };

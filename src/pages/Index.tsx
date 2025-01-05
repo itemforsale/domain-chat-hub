@@ -1,6 +1,14 @@
+import { useState } from "react";
 import { ChatRoom } from "@/components/ChatRoom";
+import { UsernameDialog } from "@/components/UsernameDialog";
 
 const Index = () => {
+  const [username, setUsername] = useState<string | null>(null);
+
+  if (!username) {
+    return <UsernameDialog onSubmit={setUsername} />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b">
@@ -12,7 +20,7 @@ const Index = () => {
       
       <main className="container py-6">
         <div className="h-[600px] rounded-lg border shadow-sm">
-          <ChatRoom />
+          <ChatRoom username={username} />
         </div>
       </main>
     </div>
