@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Users } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import Peer from 'peerjs';
 import type { MediaConnection } from 'peerjs';
 import { useMediaStream } from '@/hooks/useMediaStream';
+import { createPeer, setupPeerCallHandling } from '@/utils/peerUtils';
+import { VoiceChatControls } from './VoiceChatControls';
+import { LocalVideoPreview } from './LocalVideoPreview';
 import { PeerConnections } from './PeerConnections';
-import { VideoElement } from './VideoElement';
 
 interface VoiceChatProps {
   username: string;
@@ -31,13 +30,11 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
     onConnectedUsersChange?.(users.length);
   };
 
-  // Clean up function to handle disconnection
   const cleanupConnections = () => {
     peers.current.forEach((connection) => {
       connection.close();
     });
     peers.current.clear();
-    
     audioElements.current.clear();
     videoElements.current.clear();
 
@@ -50,54 +47,31 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
     setIsConnected(false);
   };
 
-  // Handle incoming calls
-  const handleIncomingCall = (call: MediaConnection) => {
-    if (!mediaStream) return;
-    
-    call.answer(mediaStream);
-    
-    call.on('stream', (remoteStream) => {
-      console.log('Received remote stream from:', call.peer);
-      peers.current.set(call.peer, call);
-    });
-
-    call.on('close', () => {
-      console.log('Call closed with:', call.peer);
-      peers.current.delete(call.peer);
-      updateConnectedUsers(connectedUsers.filter(id => id !== call.peer));
-    });
-  };
-
   const handleToggleConnection = async () => {
     try {
       if (!isConnected) {
         if (mediaError) throw mediaError;
         if (!mediaStream) throw new Error('No media stream available');
 
-        // Create a new peer with a unique ID
-        const peerId = `user-${username}-${Math.random().toString(36).substr(2, 9)}`;
-        peer.current = new Peer(peerId);
-        
-        peer.current.on('open', (id) => {
-          console.log('My peer ID is:', id);
-          updateConnectedUsers([...connectedUsers, username]);
-          
-          // Handle incoming calls
-          peer.current?.on('call', handleIncomingCall);
-        });
+        const newPeer = await createPeer(username);
+        peer.current = newPeer;
 
-        // Handle errors
-        peer.current.on('error', (err) => {
-          console.error('PeerJS error:', err);
-          toast({
-            title: "Connection error",
-            description: err.message,
-            variant: "destructive",
-          });
-          cleanupConnections();
-        });
+        setupPeerCallHandling(
+          newPeer,
+          mediaStream,
+          (peerId, connection) => {
+            peers.current.set(peerId, connection);
+            updateConnectedUsers([...connectedUsers, peerId]);
+          },
+          (peerId) => {
+            peers.current.delete(peerId);
+            updateConnectedUsers(connectedUsers.filter(id => id !== peerId));
+          }
+        );
 
         setIsConnected(true);
+        updateConnectedUsers([...connectedUsers, username]);
+        
         toast({
           title: "Connected to chat",
           description: "You can now speak and share video in the chat",
@@ -146,7 +120,6 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
     videoElements.current.set(peerId, video);
   };
 
-  // Cleanup on unmount
   useEffect(() => {
     return () => {
       cleanupConnections();
@@ -155,52 +128,23 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
 
   return (
     <div className="space-y-2">
-      <div className="flex items-center gap-2 px-4 py-2 bg-secondary/50 backdrop-blur rounded-full shadow-sm">
-        <Button
-          size="icon"
-          variant={isConnected ? "default" : "secondary"}
-          onClick={handleToggleConnection}
-        >
-          {isConnected ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-        </Button>
-        
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={handleToggleMute}
-          disabled={!isConnected}
-        >
-          {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-        </Button>
-
-        <Button
-          size="icon"
-          variant="ghost"
-          onClick={handleToggleVideo}
-          disabled={!isConnected}
-        >
-          {isVideoEnabled ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
-        </Button>
-
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Users className="h-4 w-4" />
-          <span>{connectedUsers.length} connected</span>
-        </div>
-      </div>
+      <VoiceChatControls
+        isConnected={isConnected}
+        isMuted={isMuted}
+        isVideoEnabled={isVideoEnabled}
+        connectedCount={connectedUsers.length}
+        onToggleConnection={handleToggleConnection}
+        onToggleMute={handleToggleMute}
+        onToggleVideo={handleToggleVideo}
+      />
 
       {isConnected && mediaStream && (
         <div className="space-y-2">
-          <div className="relative w-48 aspect-video bg-secondary rounded-lg overflow-hidden shadow-lg fixed bottom-4 right-4 z-50">
-            <VideoElement
-              stream={mediaStream}
-              peerId={peer.current?.id || 'local'}
-              isMuted={true}
-              onVideoElement={handleVideoElement}
-            />
-            <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-xs">
-              You (Preview)
-            </div>
-          </div>
+          <LocalVideoPreview
+            stream={mediaStream}
+            peerId={peer.current?.id || 'local'}
+            onVideoElement={handleVideoElement}
+          />
 
           <div className="w-full">
             <PeerConnections

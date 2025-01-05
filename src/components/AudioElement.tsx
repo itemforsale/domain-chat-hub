@@ -19,8 +19,13 @@ export const AudioElement = ({ stream, peerId, isMuted, onAudioElement }: AudioE
       const audio = audioRef.current;
       onAudioElement(peerId, audio);
 
-      const playAudio = () => {
-        audio.play().catch(console.error);
+      const playAudio = async () => {
+        try {
+          await audio.play();
+          console.log('Audio playing for peer:', peerId);
+        } catch (error) {
+          console.error('Error playing audio:', error);
+        }
       };
 
       audio.addEventListener('canplaythrough', playAudio);
