@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 import { useConversation } from '@11labs/react';
 
 interface VoiceChatProps {
@@ -29,10 +29,10 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         variant: "destructive",
       });
     },
-    onError: (error: Error) => {
+    onError: (message: string) => {
       toast({
         title: "Voice chat error",
-        description: error.toString(),
+        description: message,
         variant: "destructive",
       });
     }
