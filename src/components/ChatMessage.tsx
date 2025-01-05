@@ -10,9 +10,11 @@ interface ChatMessageProps {
   isAdmin?: boolean;
   isPinned?: boolean;
   isMod?: boolean;
+  isDomainSale?: boolean;
+  isAd?: boolean;
 }
 
-export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinned, isMod }: ChatMessageProps) => {
+export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinned, isMod, isDomainSale, isAd }: ChatMessageProps) => {
   const renderMessageContent = (text: string) => {
     // Check if the message contains a GIF
     const gifMatch = text.match(/\[gif\](.*?)\[\/gif\]/);
@@ -26,8 +28,8 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinn
       );
     }
 
-    // Handle URLs in pinned messages or mod messages
-    if (isPinned || isMod) {
+    // Handle URLs in special messages
+    if (isPinned || isMod || isDomainSale || isAd) {
       const urlRegex = /(https?:\/\/[^\s]+)/g;
       const parts = text.split(urlRegex);
       const matches = text.match(urlRegex) || [];
@@ -72,17 +74,25 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinn
     >
       <div className={cn(
         "flex flex-col gap-1",
-        isPinned ? "w-full" : "max-w-[70%]"
+        (isPinned || isDomainSale || isAd) ? "w-full" : "max-w-[70%]"
       )}>
         <div
           className={cn(
             "px-4 py-2 rounded-2xl text-sm shadow-sm",
+            isDomainSale ? "bg-green-100 border-2 border-green-400 w-full text-lg font-bold" :
+            isAd ? "bg-purple-100 border-2 border-purple-400 w-full text-lg" :
             isPinned ? "bg-yellow-100 border-2 border-yellow-400 w-full text-lg" :
             isAdmin ? "bg-purple-600 text-white text-lg font-bold" :
             isMod ? "bg-blue-100 text-lg" : 
             isOwn ? "bg-primary text-primary-foreground" : "bg-secondary"
           )}
         >
+          {isDomainSale && (
+            <div className="font-bold text-green-700 mb-1">🌐 Domain For Sale</div>
+          )}
+          {isAd && (
+            <div className="font-bold text-purple-700 mb-1">📢 Advertisement</div>
+          )}
           {isPinned && (
             <div className="font-bold text-yellow-700 mb-1">📌 Pinned Message</div>
           )}

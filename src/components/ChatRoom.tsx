@@ -14,6 +14,8 @@ interface Message {
   isAdmin?: boolean;
   isPinned?: boolean;
   isMod?: boolean;
+  isDomainSale?: boolean;
+  isAd?: boolean;
 }
 
 interface ChatRoomProps {
@@ -36,7 +38,7 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
   const handleSendMessage = (content: string) => {
     // Check for mod command
     if (isAdmin && content.startsWith("/mod ")) {
-      const modUsername = content.slice(5).trim(); // Remove "/mod " from the message
+      const modUsername = content.slice(5).trim();
       if (!mods.includes(modUsername)) {
         setMods([...mods, modUsername]);
         const newMessage: Message = {
@@ -49,6 +51,38 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         };
         setMessages([...messages, newMessage]);
       }
+      return;
+    }
+
+    // Check for domain sale command
+    if (isAdmin && content.startsWith("/domain ")) {
+      const domainContent = content.slice(8);
+      const newMessage: Message = {
+        id: messages.length + 1,
+        content: domainContent,
+        sender: username,
+        timestamp: "Just now",
+        isOwn: true,
+        isAdmin,
+        isDomainSale: true,
+      };
+      setMessages([...messages, newMessage]);
+      return;
+    }
+
+    // Check for ad command
+    if (isAdmin && content.startsWith("/ad ")) {
+      const adContent = content.slice(4);
+      const newMessage: Message = {
+        id: messages.length + 1,
+        content: adContent,
+        sender: username,
+        timestamp: "Just now",
+        isOwn: true,
+        isAdmin,
+        isAd: true,
+      };
+      setMessages([...messages, newMessage]);
       return;
     }
 
