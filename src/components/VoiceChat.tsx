@@ -2,7 +2,10 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Volume2, VolumeX, Users } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import Peer, { MediaConnection } from 'peerjs';
+import Peer from 'peerjs';
+import type { MediaConnection } from 'peerjs';
+import { setupAudioContext, setupMediaStream, setMicrophoneState, setAudioElementsVolume } from '../utils/audioUtils';
+import { AudioElement } from './AudioElement';
 
 interface VoiceChatProps {
   username: string;
@@ -10,9 +13,10 @@ interface VoiceChatProps {
 
 export const VoiceChat = ({ username }: VoiceChatProps) => {
   const [isConnected, setIsConnected] = useState(false);
-  const [isMuted, setIsMuted] = useState(true);
+  const [isMuted, setIsMuted] = useState(false);
   const [connectedUsers, setConnectedUsers] = useState<string[]>([]);
   const { toast } = useToast();
+  
   const audioContext = useRef<AudioContext | null>(null);
   const mediaStream = useRef<MediaStream | null>(null);
   const peer = useRef<Peer | null>(null);
@@ -22,16 +26,8 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   const handleToggleVoice = async () => {
     try {
       if (!isConnected) {
-        // Create and resume AudioContext when connecting
-        audioContext.current = new AudioContext();
-        await audioContext.current.resume();
-        
-        mediaStream.current = await navigator.mediaDevices.getUserMedia({ 
-          audio: {
-            echoCancellation: true,
-            noiseSuppression: true,
-          } 
-        });
+        audioContext.current = await setupAudioContext();
+        mediaStream.current = await setupMediaStream();
 
         // Initialize PeerJS
         peer.current = new Peer(`user-${username}-${Math.random().toString(36).substr(2, 9)}`);
@@ -45,14 +41,12 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
             call.answer(mediaStream.current!);
             
             call.on('stream', (remoteStream) => {
-              // Create audio element for the remote peer if it doesn't exist
               if (!audioElements.current.has(call.peer)) {
                 const audio = new Audio();
                 audio.srcObject = remoteStream;
-                audio.autoplay = true; // Enable autoplay
-                audio.volume = isMuted ? 0 : 1; // Set initial volume based on mute state
+                audio.autoplay = true;
+                audio.volume = isMuted ? 0 : 1;
                 
-                // Ensure audio plays when ready
                 audio.addEventListener('canplaythrough', () => {
                   audio.play().catch(console.error);
                 });
@@ -65,11 +59,9 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
           });
         });
 
-        // Set initial mute state for microphone
+        // Set initial microphone state
         if (mediaStream.current) {
-          mediaStream.current.getAudioTracks().forEach(track => {
-            track.enabled = !isMuted;
-          });
+          setMicrophoneState(mediaStream.current, !isMuted);
         }
 
         setIsConnected(true);
@@ -78,7 +70,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
           description: "You can now speak in the voice chat",
         });
       } else {
-        // Disconnect from all peers
+        // Cleanup code
         peers.current.forEach((connection) => {
           connection.close();
         });
@@ -126,15 +118,11 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
 
   const handleToggleMute = async () => {
     if (isConnected && mediaStream.current) {
-      // Toggle microphone
-      mediaStream.current.getAudioTracks().forEach(track => {
-        track.enabled = isMuted;
-      });
+      // Toggle microphone state
+      setMicrophoneState(mediaStream.current, isMuted);
       
-      // Toggle volume for all remote audio elements
-      audioElements.current.forEach((audio) => {
-        audio.volume = isMuted ? 1 : 0;
-      });
+      // Toggle volume for remote audio
+      setAudioElementsVolume(audioElements.current, isMuted ? 1 : 0);
       
       setIsMuted(!isMuted);
       
@@ -145,7 +133,6 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
     }
   };
 
-  // Connect to a new peer
   const connectToPeer = (peerId: string) => {
     if (mediaStream.current && peer.current) {
       const call = peer.current.call(peerId, mediaStream.current);
