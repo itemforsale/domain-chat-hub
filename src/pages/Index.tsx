@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChatRoom } from "@/components/ChatRoom";
 import { UsernameDialog } from "@/components/UsernameDialog";
 import { FeedPost } from "@/components/FeedPost";
@@ -46,13 +46,19 @@ const GRADIENTS = [
 ];
 
 const Index = () => {
-  const [username, setUsername] = useState<string | null>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const [username, setUsername] = useState<string | null>(() => {
+    return localStorage.getItem('username') || null;
+  });
+  const [isAdmin, setIsAdmin] = useState(() => {
+    return localStorage.getItem('isAdmin') === 'true';
+  });
   const [gradientIndex, setGradientIndex] = useState(0);
 
   const handleUsernameSubmit = (name: string, admin?: boolean) => {
     setUsername(name);
     setIsAdmin(!!admin);
+    localStorage.setItem('username', name);
+    localStorage.setItem('isAdmin', String(!!admin));
   };
 
   const handleBackgroundClick = () => {
