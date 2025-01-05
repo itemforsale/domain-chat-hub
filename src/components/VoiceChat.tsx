@@ -1,107 +1,45 @@
-import React, { useRef, useEffect } from 'react';
+import React from 'react';
+import {
+  LiveKitRoom,
+  VideoConference,
+  ControlBar,
+  useTracks,
+} from '@livekit/components-react';
+import '@livekit/components-styles';
+import { Track } from 'livekit-client';
 import { useToast } from '@/components/ui/use-toast';
-import { VideoControls } from './video/VideoControls';
-import { VideoDisplay } from './video/VideoDisplay';
-import { useMediaStream } from '@/hooks/useMediaStream';
-import { useMediaControls } from '@/hooks/useMediaControls';
-import { handlePictureInPicture, handleFullscreen } from '@/utils/videoUtils';
 
 interface VoiceChatProps {
   username: string;
 }
 
 export const VoiceChat = ({ username }: VoiceChatProps) => {
-  const videoRef = useRef<HTMLVideoElement>(null);
   const { toast } = useToast();
-  
-  const {
-    isConnected,
-    setIsConnected,
-    networkStatus,
-    mediaStream,
-    initializeMediaStream,
-    initializeAudioContext,
-    setupVideoTrack,
-    cleanup
-  } = useMediaStream(username);
-
-  const {
-    isMuted,
-    isVideoEnabled,
-    setIsVideoEnabled,
-    handleToggleMute,
-    handleToggleVideo
-  } = useMediaControls(mediaStream);
-  
-  const handleToggleConnection = async () => {
-    try {
-      if (!isConnected) {
-        const stream = await initializeMediaStream();
-        initializeAudioContext(stream);
-
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          await videoRef.current.play().catch(e => console.error('Video play failed:', e));
-        }
-        
-        await setupVideoTrack(stream);
-        setIsConnected(true);
-        setIsVideoEnabled(true);
-        
-        toast({
-          title: "Connected to video chat",
-          description: "Your camera and microphone are now active",
-        });
-      } else {
-        await cleanup();
-        
-        if (videoRef.current) {
-          videoRef.current.srcObject = null;
-        }
-        
-        toast({
-          title: "Disconnected from video chat",
-          description: "Your media connection has ended",
-          variant: "destructive",
-        });
-      }
-    } catch (error) {
-      console.error('Media device error:', error);
-      toast({
-        title: "Could not access media devices",
-        description: "Please check your camera and microphone permissions",
-        variant: "destructive",
-      });
-    }
-  };
-
-  useEffect(() => {
-    return () => {
-      cleanup();
-    };
-  }, []);
+  // For demo purposes, we're using a test server. In production, you should use your own LiveKit server
+  const url = "wss://your-livekit-server.com";
+  const token = "demo-token"; // In production, generate this token server-side
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      <VideoDisplay
-        isConnected={isConnected}
-        isVideoEnabled={isVideoEnabled}
-        networkStatus={networkStatus}
-        username={username}
-        videoRef={videoRef}
-        onPictureInPicture={() => handlePictureInPicture(videoRef)}
-        onFullscreen={() => handleFullscreen(videoRef)}
-      />
-      
-      <VideoControls
-        isConnected={isConnected}
-        isMuted={isMuted}
-        isVideoEnabled={isVideoEnabled}
-        username={username}
-        onToggleMute={handleToggleMute}
-        onToggleVideo={handleToggleVideo}
-        onToggleConnection={handleToggleConnection}
-      />
+    <div className="w-64">
+      <LiveKitRoom
+        serverUrl={url}
+        token={token}
+        connect={true}
+        room="domain-chat-room"
+        onError={(error) => {
+          console.error(error);
+          toast({
+            title: "Connection Error",
+            description: "Failed to connect to video chat",
+            variant: "destructive",
+          });
+        }}
+      >
+        <div className="relative w-64 h-48 bg-black/10 dark:bg-black/30 rounded-lg overflow-hidden shadow-lg">
+          <VideoConference />
+        </div>
+        <ControlBar />
+      </LiveKitRoom>
     </div>
   );
 };
