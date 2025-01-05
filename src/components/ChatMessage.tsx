@@ -94,13 +94,28 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinn
             isOwn ? "flex-row-reverse" : "flex-row"
           )}
         >
-          <span className={cn(
-            "font-medium",
-            isAdmin && "text-purple-600",
+          <div className={cn(
+            "font-medium flex items-center gap-2",
+            isAdmin ? "text-2xl text-purple-600 font-bold" : "",
             isMod && "animate-pulse text-blue-600"
           )}>
-            {sender} {isMod && "🛡️"}
-          </span>
+            {sender}
+            {isAdmin && (
+              <>
+                <span className="text-3xl">⭐</span>
+                <span className="text-lg font-bold text-purple-600">Admin</span>
+                <a 
+                  href="https://x.com/i/communities/1679163145921626113" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-sm text-blue-500 hover:underline ml-2"
+                >
+                  X Community →
+                </a>
+              </>
+            )}
+            {isMod && "🛡️"}
+          </div>
           <span>{timestamp}</span>
         </div>
       </div>
