@@ -5,11 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Smile, Gift } from "lucide-react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
-import { GiphyFetch } from "@giphy/js-fetch-api";
-import { GIPHY_API_KEY } from "@/constants/api-keys";
-
-// Initialize Giphy with the API key from constants
-const gf = new GiphyFetch(GIPHY_API_KEY);
+import { TENOR_API_KEY } from "@/constants/api-keys";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -35,13 +31,20 @@ export const ChatInput = ({ onSendMessage }: ChatInputProps) => {
   const searchGifs = async (query: string) => {
     if (!query) return;
     try {
-      const { data } = await gf.search(query, { limit: 10 });
-      setGifs(data.map(gif => ({
-        id: gif.id.toString(), // Convert the numeric ID to string
-        url: gif.images.fixed_height.url
-      })));
+      const response = await fetch(
+        `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(
+          query
+        )}&key=${TENOR_API_KEY}&client_key=my_test_app&limit=10`
+      );
+      const data = await response.json();
+      setGifs(
+        data.results.map((gif: any) => ({
+          id: gif.id,
+          url: gif.media_formats.gif.url,
+        }))
+      );
     } catch (error) {
-      console.error('Error fetching GIFs:', error);
+      console.error("Error fetching GIFs:", error);
     }
   };
 
