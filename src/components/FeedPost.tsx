@@ -28,10 +28,24 @@ export const FeedPost = ({
         </Avatar>
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-semibold">{username}</span>
+            <a 
+              href={`https://x.com/${username}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="font-semibold hover:underline"
+            >
+              {username}
+            </a>
             <span className="text-sm text-muted-foreground">{timestamp}</span>
           </div>
-          <p className="mt-2 text-sm">{content}</p>
+          <a
+            href={`https://x.com/i/communities/1679163145921626113`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="block mt-2 text-sm hover:text-blue-500"
+          >
+            {content}
+          </a>
           <div className="flex gap-4 mt-3">
             <Button variant="ghost" size="sm" className="text-muted-foreground">
               <Heart className="w-4 h-4 mr-1" />
