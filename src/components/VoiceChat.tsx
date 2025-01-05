@@ -102,15 +102,16 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
 
   const handleToggleMute = () => {
     if (mediaStream) {
-      console.log('Toggling mute state:', !isMuted);
       const audioTracks = mediaStream.getAudioTracks();
       
       audioTracks.forEach(track => {
-        track.enabled = isMuted;
+        // Fix: When muting, we want enabled to be false
+        track.enabled = !isMuted;
         console.log('Audio track state after toggle:', {
+          id: track.id,
           enabled: track.enabled,
           muted: track.muted,
-          readyState: track.readyState
+          label: track.label
         });
       });
       

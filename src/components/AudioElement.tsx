@@ -14,17 +14,18 @@ export const AudioElement = ({ stream, peerId, isMuted, onAudioElement }: AudioE
     if (audioRef.current) {
       const audio = audioRef.current;
       
-      // Set audio properties
       audio.srcObject = stream;
       audio.autoplay = true;
+      audio.muted = false; // Never mute the audio element itself
       audio.volume = isMuted ? 0 : 1;
       
       console.log('Setting up audio element for peer:', peerId, {
         hasAudioTracks: stream.getAudioTracks().length > 0,
         trackStates: stream.getAudioTracks().map(track => ({
+          id: track.id,
           enabled: track.enabled,
           muted: track.muted,
-          readyState: track.readyState
+          label: track.label
         }))
       });
 
@@ -49,9 +50,11 @@ export const AudioElement = ({ stream, peerId, isMuted, onAudioElement }: AudioE
         }
       };
 
+      // Play audio as soon as it can play through
       audio.addEventListener('canplaythrough', playAudio);
       
       return () => {
+        audio.pause();
         audio.removeEventListener('canplaythrough', playAudio);
         audio.srcObject = null;
       };

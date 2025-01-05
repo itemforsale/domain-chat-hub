@@ -11,14 +11,20 @@ export const useMediaStream = (video: boolean = false) => {
           audio: {
             echoCancellation: true,
             noiseSuppression: true,
-            autoGainControl: true,
+            autoGainControl: false,
           },
           video,
         });
 
-        // Ensure audio tracks are enabled by default
+        // Initialize audio tracks
         mediaStream.getAudioTracks().forEach(track => {
           track.enabled = true;
+          console.log('Audio track initialized:', {
+            id: track.id,
+            enabled: track.enabled,
+            muted: track.muted,
+            label: track.label
+          });
         });
 
         console.log('Media stream obtained:', {
@@ -40,7 +46,11 @@ export const useMediaStream = (video: boolean = false) => {
         console.log('Cleaning up media stream');
         stream.getTracks().forEach(track => {
           track.stop();
-          console.log(`Track ${track.kind} stopped:`, track.enabled);
+          console.log(`Track ${track.kind} stopped:`, {
+            id: track.id,
+            enabled: track.enabled,
+            label: track.label
+          });
         });
       }
     };
