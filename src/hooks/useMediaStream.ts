@@ -26,6 +26,11 @@ export const useMediaStream = (username: string) => {
         }
       });
 
+      // Enable video tracks by default
+      mediaStream.current.getVideoTracks().forEach(track => {
+        track.enabled = true;
+      });
+
       return mediaStream.current;
     } catch (error) {
       console.error('Media device error:', error);

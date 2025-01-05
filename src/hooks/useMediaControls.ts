@@ -3,7 +3,7 @@ import { useToast } from '@/components/ui/use-toast';
 
 export const useMediaControls = (mediaStream: React.MutableRefObject<MediaStream | null>) => {
   const [isMuted, setIsMuted] = useState(true);
-  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(true); // Changed to true
   const { toast } = useToast();
 
   const handleToggleMute = () => {
