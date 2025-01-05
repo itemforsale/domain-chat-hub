@@ -118,16 +118,16 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   return (
     <div className="flex flex-col items-center gap-4">
       {isConnected && (
-        <div className="relative w-64 h-48 bg-black rounded-lg overflow-hidden">
+        <div className="relative w-64 h-48 bg-black/10 dark:bg-black/30 rounded-lg overflow-hidden">
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className={`w-full h-full object-cover ${isVideoEnabled ? 'opacity-100' : 'opacity-0'}`}
+            className={`w-full h-full object-cover brightness-100 contrast-100 ${isVideoEnabled ? 'opacity-100' : 'opacity-0'}`}
           />
           {!isVideoEnabled && (
-            <div className="absolute inset-0 flex items-center justify-center text-white">
+            <div className="absolute inset-0 flex items-center justify-center text-foreground">
               <VideoOff className="w-8 h-8" />
             </div>
           )}
