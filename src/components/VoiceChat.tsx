@@ -20,10 +20,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   const handleToggleConnection = async () => {
     try {
       if (!isConnected) {
-        if (!audioContext.current) {
-          audioContext.current = new AudioContext();
-        }
-        
+        // Request both audio and video permissions at once
         mediaStream.current = await navigator.mediaDevices.getUserMedia({ 
           audio: {
             echoCancellation: true,
@@ -31,19 +28,27 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
             autoGainControl: true,
           },
           video: {
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
+            width: { min: 640, ideal: 1280, max: 1920 },
+            height: { min: 480, ideal: 720, max: 1080 },
             facingMode: "user",
+            frameRate: { ideal: 30 }
           }
         });
         
-        if (audioContext.current) {
+        // Initialize audio context after user interaction
+        if (!audioContext.current) {
+          audioContext.current = new AudioContext();
           const source = audioContext.current.createMediaStreamSource(mediaStream.current);
-          source.connect(audioContext.current.destination);
+          const gainNode = audioContext.current.createGain();
+          gainNode.gain.value = 0.8; // Slightly reduce volume to prevent feedback
+          source.connect(gainNode);
+          gainNode.connect(audioContext.current.destination);
         }
 
+        // Set up video stream
         if (videoRef.current && mediaStream.current) {
           videoRef.current.srcObject = mediaStream.current;
+          await videoRef.current.play().catch(e => console.error('Video play failed:', e));
         }
         
         setIsConnected(true);
@@ -53,14 +58,34 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
           description: "Your camera and microphone are now active",
         });
 
+        // Check video quality
         if (mediaStream.current) {
-          const track = mediaStream.current.getVideoTracks()[0];
-          const capabilities = track.getCapabilities();
-          setNetworkStatus(capabilities.width?.max && capabilities.width.max >= 1280 ? 'good' : 'poor');
+          const videoTrack = mediaStream.current.getVideoTracks()[0];
+          const capabilities = videoTrack.getCapabilities();
+          const settings = videoTrack.getSettings();
+          
+          // Determine network status based on actual video settings
+          if (settings.width && settings.width >= 1280) {
+            setNetworkStatus('good');
+          } else if (settings.width && settings.width >= 640) {
+            setNetworkStatus('poor');
+          } else {
+            setNetworkStatus('poor');
+          }
+
+          // Set up video track constraints
+          await videoTrack.applyConstraints({
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            frameRate: { max: 30 }
+          }).catch(e => console.warn('Could not apply video constraints:', e));
         }
       } else {
+        // Cleanup when disconnecting
         if (mediaStream.current) {
-          mediaStream.current.getTracks().forEach(track => track.stop());
+          mediaStream.current.getTracks().forEach(track => {
+            track.stop();
+          });
           mediaStream.current = null;
         }
         
@@ -83,6 +108,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         });
       }
     } catch (error) {
+      console.error('Media device error:', error);
       toast({
         title: "Could not access media devices",
         description: "Please check your camera and microphone permissions",
@@ -151,6 +177,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   };
 
   useEffect(() => {
+    // Cleanup function
     return () => {
       if (mediaStream.current) {
         mediaStream.current.getTracks().forEach(track => track.stop());
