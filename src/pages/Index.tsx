@@ -38,11 +38,11 @@ const SAMPLE_POSTS = [
 ];
 
 const GRADIENTS = [
-  "bg-gradient-to-b from-background to-secondary/10",
-  "bg-gradient-to-b from-background to-purple-500/10",
-  "bg-gradient-to-b from-background to-pink-500/10",
-  "bg-gradient-to-b from-background to-blue-500/10",
-  "bg-gradient-to-b from-background to-green-500/10"
+  "bg-gradient-to-b from-background via-background to-secondary/10 dark:from-background dark:via-background dark:to-secondary/5",
+  "bg-gradient-to-b from-background via-background to-purple-500/10 dark:from-background dark:via-background dark:to-purple-500/5",
+  "bg-gradient-to-b from-background via-background to-pink-500/10 dark:from-background dark:via-background dark:to-pink-500/5",
+  "bg-gradient-to-b from-background via-background to-blue-500/10 dark:from-background dark:via-background dark:to-blue-500/5",
+  "bg-gradient-to-b from-background via-background to-green-500/10 dark:from-background dark:via-background dark:to-green-500/5"
 ];
 
 const Index = () => {
