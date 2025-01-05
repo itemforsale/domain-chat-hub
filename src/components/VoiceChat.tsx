@@ -110,7 +110,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-2">
       <div className="flex items-center gap-2 px-4 py-2 bg-secondary/50 backdrop-blur rounded-full shadow-sm">
         <Button
           size="icon"
@@ -145,27 +145,29 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
       </div>
 
       {isConnected && mediaStream && (
-        <div className="space-y-4">
-          {/* Local video preview */}
-          <div className="relative aspect-video bg-secondary rounded-lg overflow-hidden shadow-lg">
+        <div className="space-y-2">
+          {/* Local video preview - make it smaller */}
+          <div className="relative w-48 aspect-video bg-secondary rounded-lg overflow-hidden shadow-lg fixed bottom-4 right-4 z-50">
             <VideoElement
               stream={mediaStream}
               peerId={peer.current?.id || 'local'}
               isMuted={true}
               onVideoElement={handleVideoElement}
             />
-            <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-sm">
+            <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-xs">
               You (Preview)
             </div>
           </div>
 
-          {/* Remote peer connections */}
-          <PeerConnections
-            peers={peers.current}
-            isMuted={isMuted}
-            onAudioElement={handleAudioElement}
-            onVideoElement={handleVideoElement}
-          />
+          {/* Remote peer connections - full width */}
+          <div className="w-full">
+            <PeerConnections
+              peers={peers.current}
+              isMuted={isMuted}
+              onAudioElement={handleAudioElement}
+              onVideoElement={handleVideoElement}
+            />
+          </div>
         </div>
       )}
     </div>
