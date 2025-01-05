@@ -19,14 +19,14 @@ export const ChatInput = ({ onSendMessage }: ChatInputProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t">
+    <form onSubmit={handleSubmit} className="flex gap-2 p-4 border-t bg-card/50 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <Input
         value={message}
         onChange={(e) => setMessage(e.target.value)}
         placeholder="Type your message..."
         className="flex-1"
       />
-      <Button type="submit" size="icon">
+      <Button type="submit" size="icon" className="bg-primary hover:bg-primary/90">
         <Send className="h-4 w-4" />
       </Button>
     </form>

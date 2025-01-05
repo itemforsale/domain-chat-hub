@@ -2,6 +2,7 @@ import { useState } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Users } from "lucide-react";
 
 interface Message {
   id: number;
@@ -39,11 +40,16 @@ export const ChatRoom = ({ username }: ChatRoomProps) => {
 
   return (
     <div className="flex flex-col h-full bg-background">
-      <div className="p-4 border-b">
-        <h2 className="text-lg font-semibold">Domain Chat</h2>
-        <p className="text-sm text-muted-foreground">
-          Connected users: 1
-        </p>
+      <div className="p-4 border-b flex items-center justify-between">
+        <div>
+          <h2 className="text-lg font-semibold flex items-center gap-2">
+            <Users className="h-5 w-5" />
+            Domain Chat
+          </h2>
+          <p className="text-sm text-muted-foreground">
+            Connected users: 1
+          </p>
+        </div>
       </div>
       
       <ScrollArea className="flex-1 p-4">

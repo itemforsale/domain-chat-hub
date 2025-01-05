@@ -3,6 +3,7 @@ import { ChatRoom } from "@/components/ChatRoom";
 import { UsernameDialog } from "@/components/UsernameDialog";
 import { FeedPost } from "@/components/FeedPost";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Users, MessageSquare } from "lucide-react";
 
 const SAMPLE_POSTS = [
   {
@@ -43,32 +44,40 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="border-b">
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
+      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div className="container py-4">
-          <h1 className="text-2xl font-bold">DomainChat</h1>
+          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+            DomainChat
+          </h1>
           <p className="text-muted-foreground">Connect with domain enthusiasts</p>
         </div>
       </header>
       
       <main className="container py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 h-[600px] rounded-lg border shadow-sm">
+        <div className="lg:col-span-2 h-[600px] rounded-lg border shadow-lg bg-card">
           <ChatRoom username={username} />
         </div>
         
-        <div className="h-[600px] rounded-lg border shadow-sm bg-background">
-          <div className="p-4 border-b">
-            <h2 className="text-lg font-semibold">Domain Community Feed</h2>
-            <p className="text-sm text-muted-foreground">
-              <a 
-                href="https://x.com/i/communities/1679163145921626113" 
-                target="_blank" 
-                rel="noopener noreferrer"
-                className="text-blue-500 hover:underline"
-              >
-                Join the X.com Domain Names Community →
-              </a>
-            </p>
+        <div className="h-[600px] rounded-lg border shadow-lg bg-card">
+          <div className="p-4 border-b flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold flex items-center gap-2">
+                <Users className="h-5 w-5" />
+                Domain Community Feed
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                <a 
+                  href="https://x.com/i/communities/1679163145921626113" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline inline-flex items-center gap-1"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Join the X.com Domain Names Community →
+                </a>
+              </p>
+            </div>
           </div>
           <ScrollArea className="h-[calc(100%-73px)]">
             <div className="divide-y">
