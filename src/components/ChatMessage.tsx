@@ -8,6 +8,9 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage = ({ content, sender, timestamp, isOwn }: ChatMessageProps) => {
+  const isGif = content.startsWith('[gif]') && content.endsWith('[/gif]');
+  const gifUrl = isGif ? content.replace('[gif]', '').replace('[/gif]', '') : '';
+
   return (
     <div
       className={cn(
@@ -16,16 +19,25 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn }: ChatMessagePr
       )}
     >
       <div className="flex flex-col gap-1 max-w-[70%]">
-        <div
-          className={cn(
-            "px-4 py-2 rounded-2xl text-sm shadow-sm",
-            isOwn
-              ? "bg-primary text-primary-foreground ml-auto"
-              : "bg-secondary"
-          )}
-        >
-          {content}
-        </div>
+        {isGif ? (
+          <div className={cn(
+            "rounded-2xl overflow-hidden shadow-sm",
+            isOwn ? "ml-auto" : ""
+          )}>
+            <img src={gifUrl} alt="GIF" className="max-w-full h-auto" />
+          </div>
+        ) : (
+          <div
+            className={cn(
+              "px-4 py-2 rounded-2xl text-sm shadow-sm",
+              isOwn
+                ? "bg-primary text-primary-foreground ml-auto"
+                : "bg-secondary"
+            )}
+          >
+            {content}
+          </div>
+        )}
         <div
           className={cn(
             "flex gap-2 text-xs text-muted-foreground",
