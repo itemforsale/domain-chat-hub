@@ -2,6 +2,7 @@ import { useMessages } from "@/hooks/useMessages";
 import { ChatHeader } from "./ChatHeader";
 import { MessageList } from "./MessageList";
 import { ChatInput } from "./ChatInput";
+import { getIpAddress } from "@/utils/getIpAddress";
 
 interface ChatRoomProps {
   username: string;
@@ -11,7 +12,9 @@ interface ChatRoomProps {
 export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
   const { messages, mods, addMessage, addModerator } = useMessages();
 
-  const handleSendMessage = (content: string) => {
+  const handleSendMessage = async (content: string) => {
+    const ipAddress = await getIpAddress();
+
     // Check for mod command
     if (isAdmin && content.startsWith("/mod ")) {
       const modUsername = content.slice(5).trim();
@@ -20,6 +23,7 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
           id: messages.length + 1,
           content: `${modUsername} has been granted moderator status.`,
           sender: "System",
+          senderIp: ipAddress,
           timestamp: "Just now",
           isOwn: false,
           isAdmin: true,
@@ -36,6 +40,7 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         id: messages.length + 1,
         content: domainContent,
         sender: username,
+        senderIp: ipAddress,
         timestamp: "Just now",
         isOwn: true,
         isAdmin,
@@ -52,6 +57,7 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         id: messages.length + 1,
         content: adContent,
         sender: username,
+        senderIp: ipAddress,
         timestamp: "Just now",
         isOwn: true,
         isAdmin,
@@ -68,6 +74,7 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         id: messages.length + 1,
         content: pinnedContent,
         sender: username,
+        senderIp: ipAddress,
         timestamp: "Just now",
         isOwn: true,
         isAdmin,
@@ -79,6 +86,7 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         id: messages.length + 1,
         content,
         sender: username,
+        senderIp: ipAddress,
         timestamp: "Just now",
         isOwn: true,
         isAdmin,

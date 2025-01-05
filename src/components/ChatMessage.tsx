@@ -5,6 +5,7 @@ import React from 'react';
 interface ChatMessageProps {
   content: string;
   sender: string;
+  senderIp?: string;
   timestamp: string;
   isOwn?: boolean;
   isAdmin?: boolean;
@@ -14,7 +15,18 @@ interface ChatMessageProps {
   isAd?: boolean;
 }
 
-export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinned, isMod, isDomainSale, isAd }: ChatMessageProps) => {
+export const ChatMessage = ({ 
+  content, 
+  sender, 
+  senderIp, 
+  timestamp, 
+  isOwn, 
+  isAdmin, 
+  isPinned, 
+  isMod, 
+  isDomainSale, 
+  isAd 
+}: ChatMessageProps) => {
   const renderMessageContent = (text: string) => {
     // Check if the message contains a GIF
     const gifMatch = text.match(/\[gif\](.*?)\[\/gif\]/);
@@ -110,6 +122,9 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinn
             isMod && "animate-pulse text-blue-600"
           )}>
             {sender}
+            {senderIp && (
+              <span className="text-xs text-muted-foreground">({senderIp})</span>
+            )}
             {isAdmin && (
               <>
                 <span className="text-3xl">⭐</span>
