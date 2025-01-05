@@ -15,9 +15,9 @@ interface VoiceChatProps {
 
 export const VoiceChat = ({ username }: VoiceChatProps) => {
   const { toast } = useToast();
-  // For demo purposes, we're using a test server. In production, you should use your own LiveKit server
-  const url = "wss://your-livekit-server.com";
-  const token = "demo-token"; // In production, generate this token server-side
+  // Using LiveKit's demo server for testing. In production, use your own LiveKit server
+  const url = "wss://demo.livekit.cloud";
+  const token = "devkey"; // For demo only. In production, generate this token server-side
 
   return (
     <div className="w-64">
@@ -25,7 +25,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         serverUrl={url}
         token={token}
         connect={true}
-        roomName="domain-chat-room"
+        room="domain-chat-room"
         onError={(error) => {
           console.error(error);
           toast({
