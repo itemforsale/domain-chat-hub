@@ -6,7 +6,7 @@ export const ChatHeader = () => {
       <div>
         <h2 className="text-lg font-semibold flex items-center gap-2">
           <Users className="h-5 w-5" />
-          Domain Chat
+          DomainChatBox.com
         </h2>
         <p className="text-sm text-muted-foreground">
           Connected users: 1

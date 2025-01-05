@@ -99,7 +99,7 @@ const Index = () => {
         <div className="container py-4 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-              DomainChat
+              DomainChatBox.com
             </h1>
             <p className="text-muted-foreground">Connect with domain enthusiasts</p>
           </div>
