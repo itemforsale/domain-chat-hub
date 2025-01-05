@@ -3,11 +3,9 @@ import {
   LiveKitRoom,
   VideoConference,
   ControlBar,
-  useTracks,
 } from '@livekit/components-react';
 import '@livekit/components-styles';
-import { Track } from 'livekit-client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface VoiceChatProps {
   username: string;
@@ -15,9 +13,12 @@ interface VoiceChatProps {
 
 export const VoiceChat = ({ username }: VoiceChatProps) => {
   const { toast } = useToast();
-  // Using LiveKit's demo server for testing. In production, use your own LiveKit server
+  // Using LiveKit's demo server - in production use your own server
   const url = "wss://demo.livekit.cloud";
-  const token = "devkey"; // For demo only. In production, generate this token server-side
+  
+  // Generate a proper token for the demo server
+  // This is a temporary token for testing. In production, generate this server-side
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MzYxMTY0MDAsImlzcyI6ImRlbW8iLCJuYW1lIjoidXNlciIsIm5iZiI6MTcwNDU4MDQwMCwic3ViIjoidXNlciIsInZpZGVvIjp7InJvb20iOiJkb21haW4tY2hhdC1yb29tIiwicm9vbUpvaW4iOnRydWV9fQ.YNQv-GkwzuE_1yYGzjmDyNVGHJgby0x_zYIMHSUDEGY";
 
   return (
     <div className="w-64">
@@ -25,7 +26,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         serverUrl={url}
         token={token}
         connect={true}
-        name="domain-chat-room"
+        room="domain-chat-room"
         onError={(error) => {
           console.error(error);
           toast({
