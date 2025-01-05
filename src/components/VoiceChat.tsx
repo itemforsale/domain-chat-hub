@@ -6,6 +6,7 @@ import Peer from 'peerjs';
 import type { MediaConnection } from 'peerjs';
 import { useMediaStream } from '@/hooks/useMediaStream';
 import { PeerConnections } from './PeerConnections';
+import { VideoElement } from './VideoElement';
 
 interface VoiceChatProps {
   username: string;
@@ -30,14 +31,12 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         if (mediaError) throw mediaError;
         if (!mediaStream) throw new Error('No media stream available');
 
-        // Initialize PeerJS
         peer.current = new Peer(`user-${username}-${Math.random().toString(36).substr(2, 9)}`);
         
         peer.current.on('open', (id) => {
           console.log('My peer ID is: ' + id);
           setConnectedUsers(prev => [...prev, username]);
           
-          // Handle incoming calls
           peer.current?.on('call', async (call) => {
             call.answer(mediaStream);
             
@@ -53,7 +52,6 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
           description: "You can now speak and share video in the chat",
         });
       } else {
-        // Cleanup
         peers.current.forEach((connection) => {
           connection.close();
         });
@@ -146,13 +144,29 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         </div>
       </div>
 
-      {isConnected && (
-        <PeerConnections
-          peers={peers.current}
-          isMuted={isMuted}
-          onAudioElement={handleAudioElement}
-          onVideoElement={handleVideoElement}
-        />
+      {isConnected && mediaStream && (
+        <div className="space-y-4">
+          {/* Local video preview */}
+          <div className="relative aspect-video bg-secondary rounded-lg overflow-hidden shadow-lg">
+            <VideoElement
+              stream={mediaStream}
+              peerId={peer.current?.id || 'local'}
+              isMuted={true}
+              onVideoElement={handleVideoElement}
+            />
+            <div className="absolute bottom-2 left-2 bg-black/50 px-2 py-1 rounded text-white text-sm">
+              You (Preview)
+            </div>
+          </div>
+
+          {/* Remote peer connections */}
+          <PeerConnections
+            peers={peers.current}
+            isMuted={isMuted}
+            onAudioElement={handleAudioElement}
+            onVideoElement={handleVideoElement}
+          />
+        </div>
       )}
     </div>
   );
