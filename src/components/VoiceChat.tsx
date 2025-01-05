@@ -1,45 +1,97 @@
-import React from 'react';
-import {
-  LiveKitRoom,
-  VideoConference,
-  ControlBar,
-  useTracks,
-} from '@livekit/components-react';
-import '@livekit/components-styles';
-import { Track } from 'livekit-client';
+import React, { useState } from 'react';
+import { Button } from '@/components/ui/button';
+import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { useConversation } from '@11labs/react';
 
 interface VoiceChatProps {
   username: string;
 }
 
 export const VoiceChat = ({ username }: VoiceChatProps) => {
+  const [isConnected, setIsConnected] = useState(false);
+  const [isMuted, setIsMuted] = useState(true);
   const { toast } = useToast();
-  // Using LiveKit's demo server for testing. In production, use your own LiveKit server
-  const url = "wss://demo.livekit.cloud";
-  const token = "devkey"; // For demo only. In production, generate this token server-side
+  
+  const conversation = useConversation({
+    onConnect: () => {
+      setIsConnected(true);
+      toast({
+        title: "Voice chat connected",
+        description: "You can now speak in the voice chat",
+      });
+    },
+    onDisconnect: () => {
+      setIsConnected(false);
+      toast({
+        title: "Voice chat disconnected",
+        description: "Voice chat connection ended",
+        variant: "destructive",
+      });
+    },
+    onError: (error) => {
+      toast({
+        title: "Voice chat error",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleToggleVoice = async () => {
+    try {
+      if (!isConnected) {
+        // Request microphone access
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Replace with your ElevenLabs agent ID
+        await conversation.startSession({
+          agentId: "your-agent-id-here"
+        });
+      } else {
+        await conversation.endSession();
+      }
+    } catch (error) {
+      toast({
+        title: "Microphone access denied",
+        description: "Please allow microphone access to use voice chat",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleToggleMute = async () => {
+    if (isConnected) {
+      await conversation.setVolume({ volume: isMuted ? 1 : 0 });
+      setIsMuted(!isMuted);
+    }
+  };
 
   return (
-    <div className="w-64">
-      <LiveKitRoom
-        serverUrl={url}
-        token={token}
-        connect={true}
-        name="domain-chat-room"
-        onError={(error) => {
-          console.error(error);
-          toast({
-            title: "Connection Error",
-            description: "Failed to connect to video chat",
-            variant: "destructive",
-          });
-        }}
+    <div className="flex items-center gap-2 px-4 py-2 bg-secondary/50 backdrop-blur rounded-full shadow-sm">
+      <Button
+        size="icon"
+        variant={isConnected ? "default" : "secondary"}
+        onClick={handleToggleVoice}
+        className="animate-in fade-in duration-200"
       >
-        <div className="relative w-64 h-48 bg-black/10 dark:bg-black/30 rounded-lg overflow-hidden shadow-lg">
-          <VideoConference />
-        </div>
-        <ControlBar />
-      </LiveKitRoom>
+        {isConnected ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+      </Button>
+      
+      <Button
+        size="icon"
+        variant="ghost"
+        onClick={handleToggleMute}
+        disabled={!isConnected}
+        className={!isConnected ? "opacity-50" : ""}
+      >
+        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+      </Button>
+      
+      {isConnected && (
+        <span className="text-xs font-medium text-muted-foreground animate-pulse">
+          Live • {username}
+        </span>
+      )}
     </div>
   );
 };
