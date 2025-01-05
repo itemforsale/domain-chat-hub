@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Users } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
@@ -31,25 +31,70 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
     onConnectedUsersChange?.(users.length);
   };
 
+  // Clean up function to handle disconnection
+  const cleanupConnections = () => {
+    peers.current.forEach((connection) => {
+      connection.close();
+    });
+    peers.current.clear();
+    
+    audioElements.current.clear();
+    videoElements.current.clear();
+
+    if (peer.current) {
+      peer.current.destroy();
+      peer.current = null;
+    }
+    
+    updateConnectedUsers(connectedUsers.filter(user => user !== username));
+    setIsConnected(false);
+  };
+
+  // Handle incoming calls
+  const handleIncomingCall = (call: MediaConnection) => {
+    if (!mediaStream) return;
+    
+    call.answer(mediaStream);
+    
+    call.on('stream', (remoteStream) => {
+      console.log('Received remote stream from:', call.peer);
+      peers.current.set(call.peer, call);
+    });
+
+    call.on('close', () => {
+      console.log('Call closed with:', call.peer);
+      peers.current.delete(call.peer);
+      updateConnectedUsers(connectedUsers.filter(id => id !== call.peer));
+    });
+  };
+
   const handleToggleConnection = async () => {
     try {
       if (!isConnected) {
         if (mediaError) throw mediaError;
         if (!mediaStream) throw new Error('No media stream available');
 
-        peer.current = new Peer(`user-${username}-${Math.random().toString(36).substr(2, 9)}`);
+        // Create a new peer with a unique ID
+        const peerId = `user-${username}-${Math.random().toString(36).substr(2, 9)}`;
+        peer.current = new Peer(peerId);
         
         peer.current.on('open', (id) => {
-          console.log('My peer ID is: ' + id);
+          console.log('My peer ID is:', id);
           updateConnectedUsers([...connectedUsers, username]);
           
-          peer.current?.on('call', async (call) => {
-            call.answer(mediaStream);
-            
-            call.on('stream', (remoteStream) => {
-              peers.current.set(call.peer, call);
-            });
+          // Handle incoming calls
+          peer.current?.on('call', handleIncomingCall);
+        });
+
+        // Handle errors
+        peer.current.on('error', (err) => {
+          console.error('PeerJS error:', err);
+          toast({
+            title: "Connection error",
+            description: err.message,
+            variant: "destructive",
           });
+          cleanupConnections();
         });
 
         setIsConnected(true);
@@ -58,22 +103,7 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
           description: "You can now speak and share video in the chat",
         });
       } else {
-        peers.current.forEach((connection) => {
-          connection.close();
-        });
-        peers.current.clear();
-        
-        audioElements.current.clear();
-        videoElements.current.clear();
-
-        if (peer.current) {
-          peer.current.destroy();
-          peer.current = null;
-        }
-        
-        updateConnectedUsers(connectedUsers.filter(user => user !== username));
-        setIsConnected(false);
-        
+        cleanupConnections();
         toast({
           title: "Disconnected from chat",
           description: "Chat connection ended",
@@ -81,6 +111,7 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
         });
       }
     } catch (error) {
+      console.error('Connection error:', error);
       toast({
         title: "Chat error",
         description: error instanceof Error ? error.message : "Failed to connect to chat",
@@ -114,6 +145,13 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
   const handleVideoElement = (peerId: string, video: HTMLVideoElement) => {
     videoElements.current.set(peerId, video);
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      cleanupConnections();
+    };
+  }, []);
 
   return (
     <div className="space-y-2">
@@ -152,7 +190,6 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
 
       {isConnected && mediaStream && (
         <div className="space-y-2">
-          {/* Local video preview - make it smaller */}
           <div className="relative w-48 aspect-video bg-secondary rounded-lg overflow-hidden shadow-lg fixed bottom-4 right-4 z-50">
             <VideoElement
               stream={mediaStream}
@@ -165,7 +202,6 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
             </div>
           </div>
 
-          {/* Remote peer connections - full width */}
           <div className="w-full">
             <PeerConnections
               peers={peers.current}
