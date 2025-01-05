@@ -26,7 +26,10 @@ export const GifPicker = ({ onGifSelect }: GifPickerProps) => {
       ? gf.search(search, { offset, limit: 10 })
       : gf.trending({ offset, limit: 10 });
 
-  const handleGifClick = (gif: any) => {
+  const handleGifClick = (gif: any, e?: React.SyntheticEvent) => {
+    if (e) {
+      e.preventDefault();
+    }
     onGifSelect(gif.images.original.url);
     setOpen(false);
   };
@@ -59,6 +62,7 @@ export const GifPicker = ({ onGifSelect }: GifPickerProps) => {
             width={280}
             columns={2}
             gutter={6}
+            noLink={true}
           />
         </div>
       </PopoverContent>
