@@ -2,6 +2,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { VideoOff, Maximize2, PictureInPicture } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 interface VideoDisplayProps {
   isConnected: boolean;
@@ -22,6 +23,20 @@ export const VideoDisplay = ({
   onPictureInPicture,
   onFullscreen,
 }: VideoDisplayProps) => {
+  const { toast } = useToast();
+  
+  const handlePictureInPictureClick = async () => {
+    try {
+      await onPictureInPicture();
+    } catch (error) {
+      toast({
+        title: "Picture-in-Picture Failed",
+        description: "Please ensure video is playing before entering picture-in-picture mode",
+        variant: "destructive",
+      });
+    }
+  };
+
   if (!isConnected) return null;
 
   return (
@@ -55,7 +70,7 @@ export const VideoDisplay = ({
           size="icon"
           variant="ghost"
           className="h-8 w-8 bg-black/20 hover:bg-black/40"
-          onClick={onPictureInPicture}
+          onClick={handlePictureInPictureClick}
         >
           <PictureInPicture className="h-4 w-4 text-white" />
         </Button>
