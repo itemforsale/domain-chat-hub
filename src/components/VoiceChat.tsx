@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import type { MediaConnection } from 'peerjs';
+import type { MediaConnection, Peer } from 'peerjs';  // Updated import to include Peer type
 import { useMediaStream } from '@/hooks/useMediaStream';
 import { createPeer, setupPeerCallHandling } from '@/utils/peerUtils';
 import { VoiceChatControls } from './VoiceChatControls';
