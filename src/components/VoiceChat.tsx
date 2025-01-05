@@ -1,7 +1,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Video, VideoOff, Volume2, VolumeX } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Maximize2, PictureInPicture } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 interface VoiceChatProps {
   username: string;
@@ -11,6 +12,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const [isVideoEnabled, setIsVideoEnabled] = useState(false);
+  const [networkStatus, setNetworkStatus] = useState<'good' | 'poor' | 'offline'>('good');
   const { toast } = useToast();
   const audioContext = useRef<AudioContext | null>(null);
   const mediaStream = useRef<MediaStream | null>(null);
@@ -19,27 +21,28 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   const handleToggleConnection = async () => {
     try {
       if (!isConnected) {
-        // Initialize audio context if not already done
         if (!audioContext.current) {
           audioContext.current = new AudioContext();
         }
         
-        // Request media access with both audio and video
         mediaStream.current = await navigator.mediaDevices.getUserMedia({ 
           audio: {
             echoCancellation: true,
             noiseSuppression: true,
+            autoGainControl: true,
           },
-          video: true
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: "user",
+          }
         });
         
-        // Connect the audio to the audio context
         if (audioContext.current) {
           const source = audioContext.current.createMediaStreamSource(mediaStream.current);
           source.connect(audioContext.current.destination);
         }
 
-        // Set video stream
         if (videoRef.current && mediaStream.current) {
           videoRef.current.srcObject = mediaStream.current;
         }
@@ -47,11 +50,17 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         setIsConnected(true);
         setIsVideoEnabled(true);
         toast({
-          title: "Media connected",
-          description: "Audio and video are now available",
+          title: "Connected to video chat",
+          description: "Your camera and microphone are now active",
         });
+
+        // Monitor connection quality
+        if (mediaStream.current) {
+          const track = mediaStream.current.getVideoTracks()[0];
+          const capabilities = track.getCapabilities();
+          setNetworkStatus(capabilities.width?.max && capabilities.width.max >= 1280 ? 'good' : 'poor');
+        }
       } else {
-        // Disconnect and cleanup
         if (mediaStream.current) {
           mediaStream.current.getTracks().forEach(track => track.stop());
           mediaStream.current = null;
@@ -68,18 +77,20 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         
         setIsConnected(false);
         setIsVideoEnabled(false);
+        setNetworkStatus('offline');
         toast({
-          title: "Disconnected",
-          description: "Media connection ended",
+          title: "Disconnected from video chat",
+          description: "Your media connection has ended",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: "Media access denied",
-        description: "Please allow camera and microphone access",
+        title: "Could not access media devices",
+        description: "Please check your camera and microphone permissions",
         variant: "destructive",
       });
+      setNetworkStatus('offline');
     }
   };
 
@@ -90,6 +101,11 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         track.enabled = isMuted;
       });
       setIsMuted(!isMuted);
+      
+      toast({
+        title: isMuted ? "Microphone unmuted" : "Microphone muted",
+        description: `Others ${isMuted ? "can" : "cannot"} hear you now`,
+      });
     }
   };
 
@@ -100,10 +116,42 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         track.enabled = !isVideoEnabled;
       });
       setIsVideoEnabled(!isVideoEnabled);
+      
+      toast({
+        title: isVideoEnabled ? "Camera turned off" : "Camera turned on",
+        description: `Others ${isVideoEnabled ? "cannot" : "can"} see you now`,
+      });
     }
   };
 
-  // Cleanup on unmount
+  const handlePictureInPicture = async () => {
+    try {
+      if (videoRef.current) {
+        if (document.pictureInPictureElement) {
+          await document.exitPictureInPicture();
+        } else {
+          await videoRef.current.requestPictureInPicture();
+        }
+      }
+    } catch (error) {
+      toast({
+        title: "Picture-in-picture failed",
+        description: "Your browser might not support this feature",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleFullscreen = () => {
+    if (videoRef.current) {
+      if (document.fullscreenElement) {
+        document.exitFullscreen();
+      } else {
+        videoRef.current.requestFullscreen();
+      }
+    }
+  };
+
   useEffect(() => {
     return () => {
       if (mediaStream.current) {
@@ -118,7 +166,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   return (
     <div className="flex flex-col items-center gap-4">
       {isConnected && (
-        <div className="relative w-64 h-48 bg-black/10 dark:bg-black/30 rounded-lg overflow-hidden">
+        <div className="relative w-64 h-48 bg-black/10 dark:bg-black/30 rounded-lg overflow-hidden shadow-lg">
           <video
             ref={videoRef}
             autoPlay
@@ -131,8 +179,35 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
               <VideoOff className="w-8 h-8" />
             </div>
           )}
+          <div className="absolute top-2 left-2">
+            <Badge variant={
+              networkStatus === 'good' ? 'default' :
+              networkStatus === 'poor' ? 'warning' : 'destructive'
+            }>
+              {networkStatus === 'good' ? 'HD' :
+               networkStatus === 'poor' ? 'SD' : 'Offline'}
+            </Badge>
+          </div>
           <div className="absolute bottom-2 left-2 text-xs text-white bg-black/50 px-2 py-1 rounded">
             {username}
+          </div>
+          <div className="absolute top-2 right-2 flex gap-1">
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 bg-black/20 hover:bg-black/40"
+              onClick={handlePictureInPicture}
+            >
+              <PictureInPicture className="h-4 w-4 text-white" />
+            </Button>
+            <Button
+              size="icon"
+              variant="ghost"
+              className="h-8 w-8 bg-black/20 hover:bg-black/40"
+              onClick={handleFullscreen}
+            >
+              <Maximize2 className="h-4 w-4 text-white" />
+            </Button>
           </div>
         </div>
       )}
