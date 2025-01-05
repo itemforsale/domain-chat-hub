@@ -36,7 +36,7 @@ export const ChatInput = ({ onSendMessage }: ChatInputProps) => {
     try {
       const { data } = await gf.search(query, { limit: 10 });
       setGifs(data.map(gif => ({
-        id: gif.id,
+        id: gif.id.toString(), // Convert the numeric ID to string
         url: gif.images.fixed_height.url
       })));
     } catch (error) {
