@@ -1,8 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import { useConversation } from '@11labs/react';
 
 interface VoiceChatProps {
   username: string;
@@ -12,43 +11,52 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(true);
   const { toast } = useToast();
+  const audioContext = useRef<AudioContext | null>(null);
+  const mediaStream = useRef<MediaStream | null>(null);
   
-  const conversation = useConversation({
-    onConnect: () => {
-      setIsConnected(true);
-      toast({
-        title: "Voice chat connected",
-        description: "You can now speak in the voice chat",
-      });
-    },
-    onDisconnect: () => {
-      setIsConnected(false);
-      toast({
-        title: "Voice chat disconnected",
-        description: "Voice chat connection ended",
-        variant: "destructive",
-      });
-    },
-    onError: (error: string) => {
-      toast({
-        title: "Voice chat error",
-        description: error,
-        variant: "destructive",
-      });
-    }
-  });
-
   const handleToggleVoice = async () => {
     try {
       if (!isConnected) {
+        // Initialize audio context if not already done
+        if (!audioContext.current) {
+          audioContext.current = new AudioContext();
+        }
+        
         // Request microphone access
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        // Replace with your ElevenLabs agent ID
-        await conversation.startSession({
-          agentId: "your-agent-id-here"
+        mediaStream.current = await navigator.mediaDevices.getUserMedia({ 
+          audio: {
+            echoCancellation: true,
+            noiseSuppression: true,
+          } 
+        });
+        
+        // Connect the microphone to the audio context
+        const source = audioContext.current.createMediaStreamSource(mediaStream.current);
+        source.connect(audioContext.current.destination);
+        
+        setIsConnected(true);
+        toast({
+          title: "Voice chat connected",
+          description: "You can now speak in the voice chat",
         });
       } else {
-        await conversation.endSession();
+        // Disconnect and cleanup
+        if (mediaStream.current) {
+          mediaStream.current.getTracks().forEach(track => track.stop());
+          mediaStream.current = null;
+        }
+        
+        if (audioContext.current) {
+          await audioContext.current.close();
+          audioContext.current = null;
+        }
+        
+        setIsConnected(false);
+        toast({
+          title: "Voice chat disconnected",
+          description: "Voice chat connection ended",
+          variant: "destructive",
+        });
       }
     } catch (error) {
       toast({
@@ -60,11 +68,25 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   };
 
   const handleToggleMute = async () => {
-    if (isConnected) {
-      await conversation.setVolume({ volume: isMuted ? 1 : 0 });
+    if (isConnected && mediaStream.current) {
+      mediaStream.current.getAudioTracks().forEach(track => {
+        track.enabled = isMuted;
+      });
       setIsMuted(!isMuted);
     }
   };
+
+  // Cleanup on unmount
+  useEffect(() => {
+    return () => {
+      if (mediaStream.current) {
+        mediaStream.current.getTracks().forEach(track => track.stop());
+      }
+      if (audioContext.current) {
+        audioContext.current.close();
+      }
+    };
+  }, []);
 
   return (
     <div className="flex items-center gap-2 px-4 py-2 bg-secondary/50 backdrop-blur rounded-full shadow-sm">
