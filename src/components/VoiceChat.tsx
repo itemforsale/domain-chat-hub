@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Mic, MicOff, Volume2, VolumeX, Users } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
-import Peer from 'peerjs';
+import { Peer as PeerJS } from 'peerjs';
 
 interface VoiceChatProps {
   username: string;
@@ -15,8 +15,8 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   const { toast } = useToast();
   const audioContext = useRef<AudioContext | null>(null);
   const mediaStream = useRef<MediaStream | null>(null);
-  const peer = useRef<Peer | null>(null);
-  const peers = useRef<Map<string, Peer.MediaConnection>>(new Map());
+  const peer = useRef<PeerJS | null>(null);
+  const peers = useRef<Map<string, PeerJS.MediaConnection>>(new Map());
   const audioElements = useRef<Map<string, HTMLAudioElement>>(new Map());
 
   const handleToggleVoice = async () => {
