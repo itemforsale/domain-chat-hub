@@ -5,7 +5,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Smile, Gift } from "lucide-react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
-import { TENOR_API_KEY } from "@/constants/api-keys";
+import { GIPHY_API_KEY } from "@/constants/api-keys";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
@@ -32,13 +32,13 @@ export const ChatInput = ({ onSendMessage }: ChatInputProps) => {
     if (!query) return;
     try {
       const response = await fetch(
-        `https://tenor.com/search/api/v2?q=${encodeURIComponent(query)}&key=${TENOR_API_KEY}&limit=10`
+        `https://api.giphy.com/v1/gifs/search?api_key=${GIPHY_API_KEY}&q=${encodeURIComponent(query)}&limit=10&rating=g`
       );
       const data = await response.json();
       setGifs(
-        data.results.map((gif: any) => ({
+        data.data.map((gif: any) => ({
           id: gif.id,
-          url: gif.media_formats.gif.url,
+          url: gif.images.fixed_height.url,
         }))
       );
     } catch (error) {

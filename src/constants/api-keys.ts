@@ -1,2 +1,2 @@
 // Note: In a production environment, API keys should be stored securely
-export const TENOR_API_KEY = "AIzaSyBgwJzRNwJ8NJLGpHhL-HNfM5bEFEiiilk";
+export const GIPHY_API_KEY = "GlVGYHkr3WSBnllca54iNt0yFbjz7L65";  // This is a public test API key from Giphy
