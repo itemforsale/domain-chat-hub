@@ -47,7 +47,14 @@ const Index = () => {
   };
 
   if (!username) {
-    return <UsernameDialog onSubmit={handleUsernameSubmit} />;
+    return (
+      <div className="flex flex-col items-center justify-center min-h-screen">
+        <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-pulse transform hover:scale-105 transition-transform duration-200">
+          DomainChatbox.com
+        </h1>
+        <UsernameDialog onSubmit={handleUsernameSubmit} />
+      </div>
+    );
   }
 
   return (
