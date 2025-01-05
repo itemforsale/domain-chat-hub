@@ -6,9 +6,10 @@ import { GifPicker } from "./GifPicker";
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
+  isAdmin?: boolean;
 }
 
-export const ChatInput = ({ onSendMessage }: ChatInputProps) => {
+export const ChatInput = ({ onSendMessage, isAdmin }: ChatInputProps) => {
   const [message, setMessage] = useState("");
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -28,7 +29,7 @@ export const ChatInput = ({ onSendMessage }: ChatInputProps) => {
       <Input
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder="Type your message..."
+        placeholder={isAdmin ? "Type your message or use /pin to pin a message..." : "Type your message..."}
         className="flex-1"
       />
       <GifPicker onGifSelect={handleGifSelect} />

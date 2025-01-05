@@ -12,6 +12,7 @@ interface Message {
   timestamp: string;
   isOwn: boolean;
   isAdmin?: boolean;
+  isPinned?: boolean;
 }
 
 interface ChatRoomProps {
@@ -31,15 +32,30 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
   ]);
 
   const handleSendMessage = (content: string) => {
-    const newMessage: Message = {
-      id: messages.length + 1,
-      content,
-      sender: username,
-      timestamp: "Just now",
-      isOwn: true,
-      isAdmin,
-    };
-    setMessages([...messages, newMessage]);
+    // Check for pin command
+    if (isAdmin && content.startsWith("/pin ")) {
+      const pinnedContent = content.slice(5); // Remove "/pin " from the message
+      const newMessage: Message = {
+        id: messages.length + 1,
+        content: pinnedContent,
+        sender: username,
+        timestamp: "Just now",
+        isOwn: true,
+        isAdmin,
+        isPinned: true,
+      };
+      setMessages([...messages, newMessage]);
+    } else {
+      const newMessage: Message = {
+        id: messages.length + 1,
+        content,
+        sender: username,
+        timestamp: "Just now",
+        isOwn: true,
+        isAdmin,
+      };
+      setMessages([...messages, newMessage]);
+    }
   };
 
   return (
@@ -65,7 +81,7 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         </div>
       </ScrollArea>
 
-      <ChatInput onSendMessage={handleSendMessage} />
+      <ChatInput onSendMessage={handleSendMessage} isAdmin={isAdmin} />
     </div>
   );
 };
