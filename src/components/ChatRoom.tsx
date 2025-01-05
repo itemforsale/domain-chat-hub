@@ -26,29 +26,32 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [mods, setMods] = useState<string[]>([]);
 
-  // Load messages from localStorage on component mount
-  useEffect(() => {
+  // Function to load messages from localStorage
+  const loadMessages = () => {
     const savedMessages = localStorage.getItem('chatMessages');
     const savedMods = localStorage.getItem('chatMods');
     
     if (savedMessages) {
       setMessages(JSON.parse(savedMessages));
-    } else {
-      // Set initial welcome message if no saved messages
-      const initialMessage: Message = {
-        id: 1,
-        content: "Welcome to the domain name chat! Feel free to discuss anything related to domains.",
-        sender: "System",
-        timestamp: "Just now",
-        isOwn: false,
-      };
-      setMessages([initialMessage]);
-      localStorage.setItem('chatMessages', JSON.stringify([initialMessage]));
     }
 
     if (savedMods) {
       setMods(JSON.parse(savedMods));
     }
+  };
+
+  // Initial load
+  useEffect(() => {
+    loadMessages();
+  }, []);
+
+  // Set up polling every 2 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadMessages();
+    }, 2000);
+
+    return () => clearInterval(interval);
   }, []);
 
   const handleSendMessage = (content: string) => {
