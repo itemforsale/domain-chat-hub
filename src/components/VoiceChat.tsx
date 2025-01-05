@@ -29,10 +29,10 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         variant: "destructive",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Voice chat error",
-        description: error.message,
+        description: error.toString(),
         variant: "destructive",
       });
     }
