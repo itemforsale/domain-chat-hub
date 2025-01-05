@@ -7,6 +7,7 @@ import { Users, MessageSquare, LogOut } from "lucide-react";
 import { DarkModeToggle } from "@/components/DarkModeToggle";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
+import { AboutContent } from "@/components/AboutContent";
 
 const SAMPLE_POSTS = [
   {
@@ -85,6 +86,9 @@ const Index = () => {
         <h1 className="text-4xl font-bold mb-8 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent animate-pulse transform hover:scale-105 transition-transform duration-200">
           DomainChatbox.com
         </h1>
+        <div className="mb-6">
+          <AboutContent />
+        </div>
         <UsernameDialog onSubmit={handleUsernameSubmit} />
       </div>
     );
@@ -99,9 +103,11 @@ const Index = () => {
         <div className="container py-4 flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-              DomainChatBox.com
+              DomainChatbox.com
             </h1>
-            <p className="text-muted-foreground">Connect with domain enthusiasts</p>
+            <div className="text-muted-foreground">
+              <AboutContent />
+            </div>
           </div>
           <div className="flex items-center gap-4">
             <Button
