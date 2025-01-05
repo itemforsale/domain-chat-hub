@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { GiphyFetch } from '@giphy/js-fetch-api';
 import { Grid } from '@giphy/react-components';
 import { Button } from './ui/button';
-import { GifIcon } from 'lucide-react';
+import { GiftIcon } from 'lucide-react';
 import {
   Popover,
   PopoverContent,
@@ -40,7 +40,7 @@ export const GifPicker = ({ onGifSelect }: GifPickerProps) => {
           className="hover:bg-accent"
           type="button"
         >
-          <GifIcon className="h-5 w-5" />
+          <GiftIcon className="h-5 w-5" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 p-0" align="end">

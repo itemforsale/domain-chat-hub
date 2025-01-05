@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import emojiRegex from 'emoji-regex';
+import React from 'react';
 
 interface ChatMessageProps {
   content: string;
