@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
-import type { MediaConnection, Peer } from 'peerjs';  // Updated import to include Peer type
+import Peer, { MediaConnection } from 'peerjs';  // Changed to import Peer directly
 import { useMediaStream } from '@/hooks/useMediaStream';
 import { createPeer, setupPeerCallHandling } from '@/utils/peerUtils';
 import { VoiceChatControls } from './VoiceChatControls';
@@ -31,6 +31,7 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
   };
 
   const cleanupConnections = () => {
+    console.log('Cleaning up connections');
     peers.current.forEach((connection) => {
       connection.close();
     });
@@ -53,6 +54,9 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
         if (mediaError) throw mediaError;
         if (!mediaStream) throw new Error('No media stream available');
 
+        console.log('Initializing media stream:', mediaStream.getTracks());
+        console.log('Audio tracks:', mediaStream.getAudioTracks());
+
         const newPeer = await createPeer(username);
         peer.current = newPeer;
 
@@ -60,10 +64,12 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
           newPeer,
           mediaStream,
           (peerId, connection) => {
+            console.log('New peer connected:', peerId);
             peers.current.set(peerId, connection);
             updateConnectedUsers([...connectedUsers, peerId]);
           },
           (peerId) => {
+            console.log('Peer disconnected:', peerId);
             peers.current.delete(peerId);
             updateConnectedUsers(connectedUsers.filter(id => id !== peerId));
           }
@@ -96,6 +102,7 @@ export const VoiceChat = ({ username, onConnectedUsersChange }: VoiceChatProps) 
 
   const handleToggleMute = () => {
     if (mediaStream) {
+      console.log('Toggling mute state:', !isMuted);
       mediaStream.getAudioTracks().forEach(track => {
         track.enabled = isMuted;
       });
