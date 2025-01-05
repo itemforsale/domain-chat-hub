@@ -5,7 +5,7 @@ export const handlePictureInPicture = async (videoRef: React.RefObject<HTMLVideo
     }
 
     // If video metadata isn't loaded yet, wait for it
-    if (!videoRef.current.readyState >= 1) {
+    if (videoRef.current.readyState < 1) {
       await new Promise((resolve) => {
         const handleLoadedMetadata = () => {
           videoRef.current?.removeEventListener('loadedmetadata', handleLoadedMetadata);
