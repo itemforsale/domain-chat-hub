@@ -7,6 +7,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, MessageSquare } from "lucide-react";
 import { useAuth } from "@/components/AuthProvider";
 import { useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 const SAMPLE_POSTS = [
   {
