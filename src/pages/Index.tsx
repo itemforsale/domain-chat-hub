@@ -1,9 +1,12 @@
-import { useState } from "react";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChatRoom } from "@/components/ChatRoom";
 import { UsernameDialog } from "@/components/UsernameDialog";
 import { FeedPost } from "@/components/FeedPost";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, MessageSquare } from "lucide-react";
+import { useAuth } from "@/components/AuthProvider";
+import { useState } from "react";
 
 const SAMPLE_POSTS = [
   {
@@ -38,6 +41,22 @@ const SAMPLE_POSTS = [
 
 const Index = () => {
   const [username, setUsername] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const { session, loading } = useAuth();
+
+  useEffect(() => {
+    if (!loading && !session) {
+      navigate("/auth");
+    }
+  }, [session, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   if (!username) {
     return <UsernameDialog onSubmit={setUsername} />;
@@ -46,11 +65,19 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-        <div className="container py-4">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-            DomainChat
-          </h1>
-          <p className="text-muted-foreground">Connect with domain enthusiasts</p>
+        <div className="container flex items-center justify-between py-4">
+          <div>
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+              DomainChat
+            </h1>
+            <p className="text-muted-foreground">Connect with domain enthusiasts</p>
+          </div>
+          <button
+            onClick={() => supabase.auth.signOut()}
+            className="text-sm text-muted-foreground hover:text-foreground"
+          >
+            Sign out
+          </button>
         </div>
       </header>
       
