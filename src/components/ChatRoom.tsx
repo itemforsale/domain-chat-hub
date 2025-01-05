@@ -11,13 +11,15 @@ interface Message {
   sender: string;
   timestamp: string;
   isOwn: boolean;
+  isAdmin?: boolean;
 }
 
 interface ChatRoomProps {
   username: string;
+  isAdmin?: boolean;
 }
 
-export const ChatRoom = ({ username }: ChatRoomProps) => {
+export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
   const [messages, setMessages] = useState<Message[]>([
     {
       id: 1,
@@ -35,6 +37,7 @@ export const ChatRoom = ({ username }: ChatRoomProps) => {
       sender: username,
       timestamp: "Just now",
       isOwn: true,
+      isAdmin,
     };
     setMessages([...messages, newMessage]);
   };

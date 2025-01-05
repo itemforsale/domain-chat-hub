@@ -7,9 +7,10 @@ interface ChatMessageProps {
   sender: string;
   timestamp: string;
   isOwn?: boolean;
+  isAdmin?: boolean;
 }
 
-export const ChatMessage = ({ content, sender, timestamp, isOwn }: ChatMessageProps) => {
+export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin }: ChatMessageProps) => {
   const renderMessageContent = (text: string) => {
     // Check if the message contains a GIF
     const gifMatch = text.match(/\[gif\](.*?)\[\/gif\]/);
@@ -47,9 +48,8 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn }: ChatMessagePr
         <div
           className={cn(
             "px-4 py-2 rounded-2xl text-sm shadow-sm",
-            isOwn
-              ? "bg-primary text-primary-foreground ml-auto"
-              : "bg-secondary"
+            isAdmin ? "bg-purple-600 text-white text-lg font-bold" : 
+            isOwn ? "bg-primary text-primary-foreground" : "bg-secondary"
           )}
         >
           {renderMessageContent(content)}
@@ -60,7 +60,9 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn }: ChatMessagePr
             isOwn ? "flex-row-reverse" : "flex-row"
           )}
         >
-          <span className="font-medium">{sender}</span>
+          <span className={cn("font-medium", isAdmin && "text-purple-600")}>
+            {sender}
+          </span>
           <span>{timestamp}</span>
         </div>
       </div>

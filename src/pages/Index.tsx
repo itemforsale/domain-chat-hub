@@ -38,9 +38,15 @@ const SAMPLE_POSTS = [
 
 const Index = () => {
   const [username, setUsername] = useState<string | null>(null);
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  const handleUsernameSubmit = (name: string, admin?: boolean) => {
+    setUsername(name);
+    setIsAdmin(!!admin);
+  };
 
   if (!username) {
-    return <UsernameDialog onSubmit={setUsername} />;
+    return <UsernameDialog onSubmit={handleUsernameSubmit} />;
   }
 
   return (
@@ -56,7 +62,7 @@ const Index = () => {
       
       <main className="container py-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2 h-[600px] rounded-lg border shadow-lg bg-card">
-          <ChatRoom username={username} />
+          <ChatRoom username={username} isAdmin={isAdmin} />
         </div>
         
         <div className="h-[600px] rounded-lg border shadow-lg bg-card">
