@@ -32,9 +32,7 @@ export const ChatInput = ({ onSendMessage }: ChatInputProps) => {
     if (!query) return;
     try {
       const response = await fetch(
-        `https://tenor.googleapis.com/v2/search?q=${encodeURIComponent(
-          query
-        )}&key=${TENOR_API_KEY}&client_key=my_test_app&limit=10`
+        `https://tenor.com/search/api/v2?q=${encodeURIComponent(query)}&key=${TENOR_API_KEY}&limit=10`
       );
       const data = await response.json();
       setGifs(
