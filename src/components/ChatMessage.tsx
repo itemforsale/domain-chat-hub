@@ -1,6 +1,9 @@
 import { cn } from "@/lib/utils";
 import emojiRegex from 'emoji-regex';
 import React from 'react';
+import { Globe } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { getCountryFromIp } from "@/utils/getCountryFromIp";
 
 interface ChatMessageProps {
   content: string;
@@ -27,6 +30,21 @@ export const ChatMessage = ({
   isDomainSale, 
   isAd 
 }: ChatMessageProps) => {
+  const [countryCode, setCountryCode] = useState<string>('');
+  const [countryName, setCountryName] = useState<string>('');
+
+  useEffect(() => {
+    const fetchCountry = async () => {
+      if (senderIp) {
+        const { country_code, country_name } = await getCountryFromIp(senderIp);
+        setCountryCode(country_code);
+        setCountryName(countryName);
+      }
+    };
+
+    fetchCountry();
+  }, [senderIp]);
+
   const renderMessageContent = (text: string) => {
     // Check if the message contains a GIF
     const gifMatch = text.match(/\[gif\](.*?)\[\/gif\]/);
@@ -123,7 +141,22 @@ export const ChatMessage = ({
           )}>
             {sender}
             {senderIp && (
-              <span className="text-xs text-muted-foreground">({senderIp})</span>
+              <>
+                <span className="text-xs text-muted-foreground flex items-center gap-1">
+                  ({senderIp})
+                  <span className="tooltip" title={countryName}>
+                    {countryCode ? (
+                      <img 
+                        src={`https://flagcdn.com/16x12/${countryCode.toLowerCase()}.png`}
+                        alt={countryName}
+                        className="inline-block ml-1"
+                      />
+                    ) : (
+                      <Globe className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </span>
+                </span>
+              </>
             )}
             {isAdmin && (
               <>
