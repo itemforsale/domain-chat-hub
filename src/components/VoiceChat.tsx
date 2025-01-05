@@ -58,10 +58,10 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
       {isConnected && (
         <>
           <LiveKitRoom
-            serverUrl="wss://domain-chat-hub.livekit.cloud"
-            token="your-token-here"
+            serverUrl="wss://demo.livekit.cloud"
+            token="devkey"
+            name="main-room"
             connect={true}
-            room="main-room"
             onError={(error) => {
               console.error(error);
               toast({
