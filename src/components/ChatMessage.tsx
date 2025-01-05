@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { parse } from 'emoji-regex';
 
 interface ChatMessageProps {
   content: string;
@@ -8,6 +9,19 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage = ({ content, sender, timestamp, isOwn }: ChatMessageProps) => {
+  // Function to convert text with emoji shortcodes to actual emojis
+  const renderMessageWithEmojis = (text: string) => {
+    const emojiRegex = parse();
+    const parts = text.split(emojiRegex());
+    
+    return parts.map((part, index) => {
+      if (emojiRegex().test(part)) {
+        return <span key={index} className="emoji">{part}</span>;
+      }
+      return <span key={index}>{part}</span>;
+    });
+  };
+
   return (
     <div
       className={cn(
@@ -24,7 +38,7 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn }: ChatMessagePr
               : "bg-secondary"
           )}
         >
-          {content}
+          {renderMessageWithEmojis(content)}
         </div>
         <div
           className={cn(
