@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
-import { VoiceChat } from "./VoiceChat";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users } from "lucide-react";
 
@@ -125,7 +124,6 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
             Connected users: 1
           </p>
         </div>
-        <VoiceChat username={username} />
       </div>
       
       <ScrollArea className="flex-1 p-4">
