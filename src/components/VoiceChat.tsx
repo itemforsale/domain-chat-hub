@@ -25,7 +25,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         serverUrl={url}
         token={token}
         connect={true}
-        room="domain-chat-room"
+        roomName="domain-chat-room"
         onError={(error) => {
           console.error(error);
           toast({
