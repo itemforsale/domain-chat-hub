@@ -6,9 +6,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Send, Smile, Gift } from "lucide-react";
 import EmojiPicker, { EmojiClickData } from "emoji-picker-react";
 import { GiphyFetch } from "@giphy/js-fetch-api";
+import { GIPHY_API_KEY } from "@/constants/api-keys";
 
-// Initialize Giphy - in a real app, this should come from environment variables
-const gf = new GiphyFetch('pLURtkhVrUXr3KG25Gy5IvzziV5OrPlW');
+// Initialize Giphy with the API key from constants
+const gf = new GiphyFetch(GIPHY_API_KEY);
 
 interface ChatInputProps {
   onSendMessage: (message: string) => void;
