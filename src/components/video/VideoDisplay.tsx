@@ -46,7 +46,7 @@ export const VideoDisplay = ({
         autoPlay
         playsInline
         muted
-        className={`w-full h-full object-cover brightness-100 contrast-100 ${isVideoEnabled ? 'opacity-100' : 'opacity-0'}`}
+        className={`w-full h-full object-cover ${isVideoEnabled ? '' : 'hidden'}`}
       />
       {!isVideoEnabled && (
         <div className="absolute inset-0 flex items-center justify-center text-foreground">
