@@ -9,17 +9,30 @@ interface ChatMessageProps {
 }
 
 export const ChatMessage = ({ content, sender, timestamp, isOwn }: ChatMessageProps) => {
-  // Function to convert text with emoji shortcodes to actual emojis
-  const renderMessageWithEmojis = (text: string) => {
+  const renderMessageContent = (text: string) => {
+    // Check if the message contains a GIF
+    const gifMatch = text.match(/\[gif\](.*?)\[\/gif\]/);
+    if (gifMatch) {
+      return (
+        <img 
+          src={gifMatch[1]} 
+          alt="GIF" 
+          className="rounded-lg max-w-[200px] max-h-[200px] object-contain"
+        />
+      );
+    }
+
+    // Handle regular messages with emojis
     const regex = emojiRegex();
     const parts = text.split(regex);
+    const matches = text.match(regex) || [];
     
-    return parts.map((part, index) => {
-      if (regex.test(part)) {
-        return <span key={index} className="emoji">{part}</span>;
-      }
-      return <span key={index}>{part}</span>;
-    });
+    return parts.map((part, i) => (
+      <React.Fragment key={i}>
+        {part}
+        {matches[i] && <span className="emoji">{matches[i]}</span>}
+      </React.Fragment>
+    ));
   };
 
   return (
@@ -38,7 +51,7 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn }: ChatMessagePr
               : "bg-secondary"
           )}
         >
-          {renderMessageWithEmojis(content)}
+          {renderMessageContent(content)}
         </div>
         <div
           className={cn(
