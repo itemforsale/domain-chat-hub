@@ -6,26 +6,33 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 
 const SAMPLE_POSTS = [
   {
-    username: "DomainExpert",
-    content: "Just acquired a premium .ai domain! The future of tech domains is here. What do you think about AI-related domain names?",
-    timestamp: "2h ago",
-    likes: 24,
-    comments: 5,
-  },
-  {
-    username: "WebMaster",
-    content: "Pro tip: When choosing a domain name, keep it short, memorable, and avoid hyphens. Your brand will thank you later! #Domains #Branding",
-    timestamp: "4h ago",
-    likes: 42,
-    comments: 8,
-  },
-  {
-    username: "DomainTrader",
-    content: "Market analysis: .com domains still dominate, but we're seeing a rise in .io and .dev popularity among tech startups. Interesting trends!",
-    timestamp: "6h ago",
-    likes: 31,
+    username: "DomainInvesting",
+    content: "Just listed a premium 3L .com domain name for sale. Seeing strong interest in short domain names lately. What's your take on the current market for 3L domains? #Domains",
+    timestamp: "1h ago",
+    likes: 45,
     comments: 12,
   },
+  {
+    username: "DomainNameWire",
+    content: "Breaking: ICANN announces new gTLD application window. This could be a game-changer for the domain industry. Who's planning to apply? #NewGTLDs #Domains",
+    timestamp: "3h ago",
+    likes: 89,
+    comments: 34,
+  },
+  {
+    username: "DNAcademy",
+    content: "Domain Tip: When evaluating a domain's worth, consider its brandability, length, and extension. The best domains are often short, memorable, and versatile. What's your domain valuation strategy?",
+    timestamp: "5h ago",
+    likes: 67,
+    comments: 23,
+  },
+  {
+    username: "DomainSherpa",
+    content: "Interesting trend: AI-related domain names are seeing a 300% increase in sales volume compared to last year. The tech sector continues to drive domain market growth. #DomainNames #AI",
+    timestamp: "6h ago",
+    likes: 112,
+    comments: 41,
+  }
 ];
 
 const Index = () => {
@@ -52,7 +59,16 @@ const Index = () => {
         <div className="h-[600px] rounded-lg border shadow-sm bg-background">
           <div className="p-4 border-b">
             <h2 className="text-lg font-semibold">Domain Community Feed</h2>
-            <p className="text-sm text-muted-foreground">Latest updates and discussions</p>
+            <p className="text-sm text-muted-foreground">
+              <a 
+                href="https://x.com/i/communities/1679163145921626113" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-500 hover:underline"
+              >
+                Join the X.com Domain Names Community →
+              </a>
+            </p>
           </div>
           <ScrollArea className="h-[calc(100%-73px)]">
             <div className="divide-y">
