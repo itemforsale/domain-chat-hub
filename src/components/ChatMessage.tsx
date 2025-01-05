@@ -35,7 +35,7 @@ export const ChatMessage = ({
 
   useEffect(() => {
     const fetchCountry = async () => {
-      if (senderIp) {
+      if (senderIp && !isAdmin) {
         const { country_code, country_name } = await getCountryFromIp(senderIp);
         setCountryCode(country_code);
         setCountryName(countryName);
@@ -43,7 +43,7 @@ export const ChatMessage = ({
     };
 
     fetchCountry();
-  }, [senderIp]);
+  }, [senderIp, isAdmin]);
 
   const renderMessageContent = (text: string) => {
     // Check if the message contains a GIF
@@ -140,7 +140,7 @@ export const ChatMessage = ({
             isMod && "animate-pulse text-blue-600"
           )}>
             {sender}
-            {senderIp && (
+            {senderIp && !isAdmin && (
               <>
                 <span className="text-xs text-muted-foreground flex items-center gap-1">
                   ({senderIp})
