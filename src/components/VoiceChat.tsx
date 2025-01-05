@@ -22,9 +22,9 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
   const handleToggleVoice = async () => {
     try {
       if (!isConnected) {
-        if (!audioContext.current) {
-          audioContext.current = new AudioContext();
-        }
+        // Create and resume AudioContext when connecting
+        audioContext.current = new AudioContext();
+        await audioContext.current.resume();
         
         mediaStream.current = await navigator.mediaDevices.getUserMedia({ 
           audio: {
@@ -41,7 +41,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
           setConnectedUsers(prev => [...prev, username]);
           
           // Handle incoming calls
-          peer.current?.on('call', (call) => {
+          peer.current?.on('call', async (call) => {
             call.answer(mediaStream.current!);
             
             call.on('stream', (remoteStream) => {
@@ -49,7 +49,14 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
               if (!audioElements.current.has(call.peer)) {
                 const audio = new Audio();
                 audio.srcObject = remoteStream;
-                audio.play().catch(console.error);
+                audio.autoplay = true; // Enable autoplay
+                audio.volume = isMuted ? 0 : 1; // Set initial volume based on mute state
+                
+                // Ensure audio plays when ready
+                audio.addEventListener('canplaythrough', () => {
+                  audio.play().catch(console.error);
+                });
+                
                 audioElements.current.set(call.peer, audio);
               }
             });
@@ -57,6 +64,13 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
             peers.current.set(call.peer, call);
           });
         });
+
+        // Set initial mute state for microphone
+        if (mediaStream.current) {
+          mediaStream.current.getAudioTracks().forEach(track => {
+            track.enabled = !isMuted;
+          });
+        }
 
         setIsConnected(true);
         toast({
@@ -112,10 +126,22 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
 
   const handleToggleMute = async () => {
     if (isConnected && mediaStream.current) {
+      // Toggle microphone
       mediaStream.current.getAudioTracks().forEach(track => {
         track.enabled = isMuted;
       });
+      
+      // Toggle volume for all remote audio elements
+      audioElements.current.forEach((audio) => {
+        audio.volume = isMuted ? 1 : 0;
+      });
+      
       setIsMuted(!isMuted);
+      
+      toast({
+        title: isMuted ? "Unmuted" : "Muted",
+        description: isMuted ? "Voice chat unmuted" : "Voice chat muted",
+      });
     }
   };
 
