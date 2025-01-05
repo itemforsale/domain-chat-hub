@@ -1,11 +1,11 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, MicOff, Volume2, VolumeX, Users } from 'lucide-react';
+import { Mic, MicOff, Video, VideoOff, Volume2, VolumeX, Users } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
 import Peer from 'peerjs';
 import type { MediaConnection } from 'peerjs';
-import { setupAudioContext, setupMediaStream, setMicrophoneState, setAudioElementsVolume } from '../utils/audioUtils';
-import { AudioElement } from './AudioElement';
+import { useMediaStream } from '@/hooks/useMediaStream';
+import { PeerConnections } from './PeerConnections';
 
 interface VoiceChatProps {
   username: string;
@@ -14,20 +14,21 @@ interface VoiceChatProps {
 export const VoiceChat = ({ username }: VoiceChatProps) => {
   const [isConnected, setIsConnected] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
+  const [isVideoEnabled, setIsVideoEnabled] = useState(false);
   const [connectedUsers, setConnectedUsers] = useState<string[]>([]);
   const { toast } = useToast();
   
-  const audioContext = useRef<AudioContext | null>(null);
-  const mediaStream = useRef<MediaStream | null>(null);
+  const { stream: mediaStream, error: mediaError } = useMediaStream(isVideoEnabled);
   const peer = useRef<Peer | null>(null);
   const peers = useRef<Map<string, MediaConnection>>(new Map());
   const audioElements = useRef<Map<string, HTMLAudioElement>>(new Map());
+  const videoElements = useRef<Map<string, HTMLVideoElement>>(new Map());
 
-  const handleToggleVoice = async () => {
+  const handleToggleConnection = async () => {
     try {
       if (!isConnected) {
-        audioContext.current = await setupAudioContext();
-        mediaStream.current = await setupMediaStream();
+        if (mediaError) throw mediaError;
+        if (!mediaStream) throw new Error('No media stream available');
 
         // Initialize PeerJS
         peer.current = new Peer(`user-${username}-${Math.random().toString(36).substr(2, 9)}`);
@@ -38,60 +39,28 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
           
           // Handle incoming calls
           peer.current?.on('call', async (call) => {
-            call.answer(mediaStream.current!);
+            call.answer(mediaStream);
             
             call.on('stream', (remoteStream) => {
-              if (!audioElements.current.has(call.peer)) {
-                const audio = new Audio();
-                audio.srcObject = remoteStream;
-                audio.autoplay = true;
-                audio.volume = isMuted ? 0 : 1;
-                
-                audio.addEventListener('canplaythrough', () => {
-                  audio.play().catch(console.error);
-                });
-                
-                audioElements.current.set(call.peer, audio);
-              }
+              peers.current.set(call.peer, call);
             });
-            
-            peers.current.set(call.peer, call);
           });
         });
 
-        // Set initial microphone state
-        if (mediaStream.current) {
-          setMicrophoneState(mediaStream.current, !isMuted);
-        }
-
         setIsConnected(true);
         toast({
-          title: "Voice chat connected",
-          description: "You can now speak in the voice chat",
+          title: "Connected to chat",
+          description: "You can now speak and share video in the chat",
         });
       } else {
-        // Cleanup code
+        // Cleanup
         peers.current.forEach((connection) => {
           connection.close();
         });
         peers.current.clear();
         
-        // Stop all audio playback
-        audioElements.current.forEach((audio) => {
-          audio.pause();
-          audio.srcObject = null;
-        });
         audioElements.current.clear();
-
-        if (mediaStream.current) {
-          mediaStream.current.getTracks().forEach(track => track.stop());
-          mediaStream.current = null;
-        }
-        
-        if (audioContext.current) {
-          await audioContext.current.close();
-          audioContext.current = null;
-        }
+        videoElements.current.clear();
 
         if (peer.current) {
           peer.current.destroy();
@@ -102,102 +71,89 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         setIsConnected(false);
         
         toast({
-          title: "Voice chat disconnected",
-          description: "Voice chat connection ended",
+          title: "Disconnected from chat",
+          description: "Chat connection ended",
           variant: "destructive",
         });
       }
     } catch (error) {
       toast({
-        title: "Voice chat error",
-        description: error instanceof Error ? error.message : "Failed to connect to voice chat",
+        title: "Chat error",
+        description: error instanceof Error ? error.message : "Failed to connect to chat",
         variant: "destructive",
       });
     }
   };
 
-  const handleToggleMute = async () => {
-    if (isConnected && mediaStream.current) {
-      // Toggle microphone state
-      setMicrophoneState(mediaStream.current, isMuted);
-      
-      // Toggle volume for remote audio
-      setAudioElementsVolume(audioElements.current, isMuted ? 1 : 0);
-      
+  const handleToggleMute = () => {
+    if (mediaStream) {
+      mediaStream.getAudioTracks().forEach(track => {
+        track.enabled = isMuted;
+      });
       setIsMuted(!isMuted);
       
       toast({
         title: isMuted ? "Unmuted" : "Muted",
-        description: isMuted ? "Voice chat unmuted" : "Voice chat muted",
+        description: isMuted ? "Chat unmuted" : "Chat muted",
       });
     }
   };
 
-  const connectToPeer = (peerId: string) => {
-    if (mediaStream.current && peer.current) {
-      const call = peer.current.call(peerId, mediaStream.current);
-      
-      call.on('stream', (remoteStream) => {
-        const audio = new Audio();
-        audio.srcObject = remoteStream;
-        audio.play().catch(console.error);
-        audioElements.current.set(peerId, audio);
-      });
-      
-      peers.current.set(peerId, call);
-    }
+  const handleToggleVideo = () => {
+    setIsVideoEnabled(!isVideoEnabled);
   };
 
-  useEffect(() => {
-    return () => {
-      peers.current.forEach((connection) => {
-        connection.close();
-      });
-      
-      audioElements.current.forEach((audio) => {
-        audio.pause();
-        audio.srcObject = null;
-      });
-      
-      if (mediaStream.current) {
-        mediaStream.current.getTracks().forEach(track => track.stop());
-      }
-      
-      if (audioContext.current) {
-        audioContext.current.close();
-      }
-      
-      if (peer.current) {
-        peer.current.destroy();
-      }
-      
-      setConnectedUsers(prev => prev.filter(user => user !== username));
-    };
-  }, [username]);
+  const handleAudioElement = (peerId: string, audio: HTMLAudioElement) => {
+    audioElements.current.set(peerId, audio);
+  };
+
+  const handleVideoElement = (peerId: string, video: HTMLVideoElement) => {
+    videoElements.current.set(peerId, video);
+  };
 
   return (
-    <div className="flex items-center gap-2 px-4 py-2 bg-secondary/50 backdrop-blur rounded-full shadow-sm">
-      <Button
-        size="icon"
-        variant={isConnected ? "default" : "secondary"}
-        onClick={handleToggleVoice}
-      >
-        {isConnected ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
-      </Button>
-      
-      <Button
-        size="icon"
-        variant="ghost"
-        onClick={handleToggleMute}
-        disabled={!isConnected}
-      >
-        {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
-      </Button>
+    <div className="space-y-4">
+      <div className="flex items-center gap-2 px-4 py-2 bg-secondary/50 backdrop-blur rounded-full shadow-sm">
+        <Button
+          size="icon"
+          variant={isConnected ? "default" : "secondary"}
+          onClick={handleToggleConnection}
+        >
+          {isConnected ? <Mic className="h-4 w-4" /> : <MicOff className="h-4 w-4" />}
+        </Button>
+        
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={handleToggleMute}
+          disabled={!isConnected}
+        >
+          {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+        </Button>
 
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Users className="h-4 w-4" />
-        <span>{connectedUsers.length} connected</span>
+        <Button
+          size="icon"
+          variant="ghost"
+          onClick={handleToggleVideo}
+          disabled={!isConnected}
+        >
+          {isVideoEnabled ? <Video className="h-4 w-4" /> : <VideoOff className="h-4 w-4" />}
+        </Button>
+
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Users className="h-4 w-4" />
+          <span>{connectedUsers.length} connected</span>
+        </div>
       </div>
+
+      {isConnected && (
+        <PeerConnections
+          peers={peers.current}
+          isMuted={isMuted}
+          onAudioElement={handleAudioElement}
+          onVideoElement={handleVideoElement}
+        />
+      )}
     </div>
   );
 };
