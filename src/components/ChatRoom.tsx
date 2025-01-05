@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { ChatInput } from "./ChatInput";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -23,23 +23,43 @@ interface ChatRoomProps {
 }
 
 export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: 1,
-      content: "Welcome to the domain name chat! Feel free to discuss anything related to domains.",
-      sender: "System",
-      timestamp: "Just now",
-      isOwn: false,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [mods, setMods] = useState<string[]>([]);
+
+  // Load messages from localStorage on component mount
+  useEffect(() => {
+    const savedMessages = localStorage.getItem('chatMessages');
+    const savedMods = localStorage.getItem('chatMods');
+    
+    if (savedMessages) {
+      setMessages(JSON.parse(savedMessages));
+    } else {
+      // Set initial welcome message if no saved messages
+      const initialMessage: Message = {
+        id: 1,
+        content: "Welcome to the domain name chat! Feel free to discuss anything related to domains.",
+        sender: "System",
+        timestamp: "Just now",
+        isOwn: false,
+      };
+      setMessages([initialMessage]);
+      localStorage.setItem('chatMessages', JSON.stringify([initialMessage]));
+    }
+
+    if (savedMods) {
+      setMods(JSON.parse(savedMods));
+    }
+  }, []);
 
   const handleSendMessage = (content: string) => {
     // Check for mod command
     if (isAdmin && content.startsWith("/mod ")) {
       const modUsername = content.slice(5).trim();
       if (!mods.includes(modUsername)) {
-        setMods([...mods, modUsername]);
+        const newMods = [...mods, modUsername];
+        setMods(newMods);
+        localStorage.setItem('chatMods', JSON.stringify(newMods));
+        
         const newMessage: Message = {
           id: messages.length + 1,
           content: `${modUsername} has been granted moderator status.`,
@@ -48,7 +68,9 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
           isOwn: false,
           isAdmin: true,
         };
-        setMessages([...messages, newMessage]);
+        const updatedMessages = [...messages, newMessage];
+        setMessages(updatedMessages);
+        localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
       }
       return;
     }
@@ -65,7 +87,9 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         isAdmin,
         isDomainSale: true,
       };
-      setMessages([...messages, newMessage]);
+      const updatedMessages = [...messages, newMessage];
+      setMessages(updatedMessages);
+      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
       return;
     }
 
@@ -81,7 +105,9 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         isAdmin,
         isAd: true,
       };
-      setMessages([...messages, newMessage]);
+      const updatedMessages = [...messages, newMessage];
+      setMessages(updatedMessages);
+      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
       return;
     }
 
@@ -97,7 +123,9 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         isAdmin,
         isPinned: true,
       };
-      setMessages([...messages, newMessage]);
+      const updatedMessages = [...messages, newMessage];
+      setMessages(updatedMessages);
+      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
     } else {
       const newMessage: Message = {
         id: messages.length + 1,
@@ -108,7 +136,9 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         isAdmin,
         isMod: mods.includes(username),
       };
-      setMessages([...messages, newMessage]);
+      const updatedMessages = [...messages, newMessage];
+      setMessages(updatedMessages);
+      localStorage.setItem('chatMessages', JSON.stringify(updatedMessages));
     }
   };
 
