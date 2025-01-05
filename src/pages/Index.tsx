@@ -4,6 +4,7 @@ import { UsernameDialog } from "@/components/UsernameDialog";
 import { FeedPost } from "@/components/FeedPost";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Users, MessageSquare } from "lucide-react";
+import { DarkModeToggle } from "@/components/DarkModeToggle";
 
 const SAMPLE_POSTS = [
   {
@@ -52,11 +53,14 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
-        <div className="container py-4">
-          <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
-            DomainChat
-          </h1>
-          <p className="text-muted-foreground">Connect with domain enthusiasts</p>
+        <div className="container py-4 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-purple-600">
+              DomainChat
+            </h1>
+            <p className="text-muted-foreground">Connect with domain enthusiasts</p>
+          </div>
+          <DarkModeToggle />
         </div>
       </header>
       
