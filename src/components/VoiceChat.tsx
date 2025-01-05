@@ -34,7 +34,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         });
         
         // Connect the audio to the audio context
-        if (audioContext.current && mediaStream.current) {
+        if (audioContext.current) {
           const source = audioContext.current.createMediaStreamSource(mediaStream.current);
           source.connect(audioContext.current.destination);
         }
@@ -42,9 +42,6 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         // Set video stream
         if (videoRef.current && mediaStream.current) {
           videoRef.current.srcObject = mediaStream.current;
-          await videoRef.current.play().catch(error => {
-            console.error('Error playing video:', error);
-          });
         }
         
         setIsConnected(true);
@@ -78,7 +75,6 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
         });
       }
     } catch (error) {
-      console.error('Media access error:', error);
       toast({
         title: "Media access denied",
         description: "Please allow camera and microphone access",
@@ -127,6 +123,7 @@ export const VoiceChat = ({ username }: VoiceChatProps) => {
             ref={videoRef}
             autoPlay
             playsInline
+            muted
             className={`w-full h-full object-cover ${isVideoEnabled ? 'opacity-100' : 'opacity-0'}`}
           />
           {!isVideoEnabled && (
