@@ -37,13 +37,26 @@ const SAMPLE_POSTS = [
   }
 ];
 
+const GRADIENTS = [
+  "bg-gradient-to-b from-background to-secondary/10",
+  "bg-gradient-to-b from-background to-purple-500/10",
+  "bg-gradient-to-b from-background to-pink-500/10",
+  "bg-gradient-to-b from-background to-blue-500/10",
+  "bg-gradient-to-b from-background to-green-500/10"
+];
+
 const Index = () => {
   const [username, setUsername] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [gradientIndex, setGradientIndex] = useState(0);
 
   const handleUsernameSubmit = (name: string, admin?: boolean) => {
     setUsername(name);
     setIsAdmin(!!admin);
+  };
+
+  const handleBackgroundClick = () => {
+    setGradientIndex((prev) => (prev + 1) % GRADIENTS.length);
   };
 
   if (!username) {
@@ -58,7 +71,10 @@ const Index = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/10">
+    <div 
+      className={`min-h-screen ${GRADIENTS[gradientIndex]} transition-colors duration-500`}
+      onClick={handleBackgroundClick}
+    >
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
         <div className="container py-4 flex justify-between items-center">
           <div>
