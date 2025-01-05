@@ -29,7 +29,7 @@ export const ChatInput = ({ onSendMessage, isAdmin }: ChatInputProps) => {
       <Input
         value={message}
         onChange={(e) => setMessage(e.target.value)}
-        placeholder={isAdmin ? "Type your message or use /pin to pin a message..." : "Type your message..."}
+        placeholder={isAdmin ? "Type your message, use /pin to pin or /mod to grant mod status..." : "Type your message..."}
         className="flex-1"
       />
       <GifPicker onGifSelect={handleGifSelect} />

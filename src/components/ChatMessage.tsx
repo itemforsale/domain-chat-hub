@@ -9,9 +9,10 @@ interface ChatMessageProps {
   isOwn?: boolean;
   isAdmin?: boolean;
   isPinned?: boolean;
+  isMod?: boolean;
 }
 
-export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinned }: ChatMessageProps) => {
+export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinned, isMod }: ChatMessageProps) => {
   const renderMessageContent = (text: string) => {
     // Check if the message contains a GIF
     const gifMatch = text.match(/\[gif\](.*?)\[\/gif\]/);
@@ -25,8 +26,8 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinn
       );
     }
 
-    // Handle URLs in pinned messages
-    if (isPinned) {
+    // Handle URLs in pinned messages or mod messages
+    if (isPinned || isMod) {
       const urlRegex = /(https?:\/\/[^\s]+)/g;
       const parts = text.split(urlRegex);
       const matches = text.match(urlRegex) || [];
@@ -77,7 +78,8 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinn
           className={cn(
             "px-4 py-2 rounded-2xl text-sm shadow-sm",
             isPinned ? "bg-yellow-100 border-2 border-yellow-400 w-full text-lg" :
-            isAdmin ? "bg-purple-600 text-white text-lg font-bold" : 
+            isAdmin ? "bg-purple-600 text-white text-lg font-bold" :
+            isMod ? "bg-blue-100 text-lg" : 
             isOwn ? "bg-primary text-primary-foreground" : "bg-secondary"
           )}
         >
@@ -92,8 +94,12 @@ export const ChatMessage = ({ content, sender, timestamp, isOwn, isAdmin, isPinn
             isOwn ? "flex-row-reverse" : "flex-row"
           )}
         >
-          <span className={cn("font-medium", isAdmin && "text-purple-600")}>
-            {sender}
+          <span className={cn(
+            "font-medium",
+            isAdmin && "text-purple-600",
+            isMod && "animate-pulse text-blue-600"
+          )}>
+            {sender} {isMod && "🛡️"}
           </span>
           <span>{timestamp}</span>
         </div>

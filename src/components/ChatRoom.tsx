@@ -13,6 +13,7 @@ interface Message {
   isOwn: boolean;
   isAdmin?: boolean;
   isPinned?: boolean;
+  isMod?: boolean;
 }
 
 interface ChatRoomProps {
@@ -30,11 +31,30 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
       isOwn: false,
     },
   ]);
+  const [mods, setMods] = useState<string[]>([]);
 
   const handleSendMessage = (content: string) => {
+    // Check for mod command
+    if (isAdmin && content.startsWith("/mod ")) {
+      const modUsername = content.slice(5).trim(); // Remove "/mod " from the message
+      if (!mods.includes(modUsername)) {
+        setMods([...mods, modUsername]);
+        const newMessage: Message = {
+          id: messages.length + 1,
+          content: `${modUsername} has been granted moderator status.`,
+          sender: "System",
+          timestamp: "Just now",
+          isOwn: false,
+          isAdmin: true,
+        };
+        setMessages([...messages, newMessage]);
+      }
+      return;
+    }
+
     // Check for pin command
     if (isAdmin && content.startsWith("/pin ")) {
-      const pinnedContent = content.slice(5); // Remove "/pin " from the message
+      const pinnedContent = content.slice(5);
       const newMessage: Message = {
         id: messages.length + 1,
         content: pinnedContent,
@@ -53,6 +73,7 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
         timestamp: "Just now",
         isOwn: true,
         isAdmin,
+        isMod: mods.includes(username),
       };
       setMessages([...messages, newMessage]);
     }
@@ -76,12 +97,19 @@ export const ChatRoom = ({ username, isAdmin }: ChatRoomProps) => {
       <ScrollArea className="flex-1 p-4">
         <div className="flex flex-col gap-4">
           {messages.map((message) => (
-            <ChatMessage key={message.id} {...message} />
+            <ChatMessage 
+              key={message.id} 
+              {...message} 
+              isMod={mods.includes(message.sender)}
+            />
           ))}
         </div>
       </ScrollArea>
 
-      <ChatInput onSendMessage={handleSendMessage} isAdmin={isAdmin} />
+      <ChatInput 
+        onSendMessage={handleSendMessage} 
+        isAdmin={isAdmin} 
+      />
     </div>
   );
 };
